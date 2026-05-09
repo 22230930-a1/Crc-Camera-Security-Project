@@ -18,6 +18,7 @@ export default function Cart() {
     customer_phone: "",
     customer_email: "",
     payment_method: "whish",
+    payment_proof: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -26,12 +27,6 @@ export default function Cart() {
 
   const isValidPhone = (phone) => {
     const cleaned = phone.replace(/\s/g, "");
-
-    // Valid examples:
-    // 71985165
-    // 03985165
-    // +96171985165
-    // 96171985165
     return /^(\+?961|0)?[3-9][0-9]{6,7}$/.test(cleaned);
   };
 
@@ -97,9 +92,18 @@ Total: $${Number(total || 0).toFixed(2)}
 
 Payment Method: ${getPaymentLabel(customer.payment_method)}
 Payment Status: Pending
+Payment Reference / Note: ${
+        customer.payment_proof ||
+        "No proof written. Customer may send screenshot manually."
+      }
+
+Whish Money Payment Details:
+Receiver: CRC Camera Security
+Whish Number: +961 71 985 165
+Amount: $${Number(total || 0).toFixed(2)}
 
 Note:
-Please confirm availability and send Whish Money payment instructions.
+Please confirm product availability and payment confirmation.
 `;
 
       const phoneNumber = "96171985165";
@@ -110,7 +114,7 @@ Please confirm availability and send Whish Money payment instructions.
       window.open(whatsappUrl, "_blank");
 
       setSuccess(
-        "Order saved successfully! WhatsApp opened with Whish Money payment request."
+        "Order saved successfully! WhatsApp opened to confirm your payment/order."
       );
 
       setCustomer({
@@ -118,6 +122,7 @@ Please confirm availability and send Whish Money payment instructions.
         customer_phone: "",
         customer_email: "",
         payment_method: "whish",
+        payment_proof: "",
       });
 
       clearCart();
@@ -159,8 +164,8 @@ Please confirm availability and send Whish Money payment instructions.
         <h2 className="h2">Shopping Cart</h2>
 
         <p className="muted">
-          Review your products, enter your contact details, and send your order
-          request through WhatsApp with Whish Money payment option.
+          Review your products, choose Whish Money or cash, and confirm your
+          order through WhatsApp.
         </p>
       </div>
 
@@ -266,10 +271,106 @@ Please confirm availability and send Whish Money payment instructions.
           </div>
         </div>
 
+        {customer.payment_method === "whish" && (
+          <div className="whishPaymentCard">
+            <div className="whishTop">
+              <div className="whishLogo">W</div>
+
+              <div>
+                <h3>Pay by Whish Money</h3>
+                <p>
+                  Transfer the total amount to our Whish number, then send the
+                  payment proof through WhatsApp.
+                </p>
+              </div>
+            </div>
+
+            <div className="whishGrid">
+              <div className="whishBox">
+                <span>Receiver Name</span>
+                <strong>CRC Camera Security</strong>
+              </div>
+
+              <div className="whishBox">
+                <span>Whish Number</span>
+                <strong>+961 71 985 165</strong>
+              </div>
+
+              <div className="whishBox">
+                <span>Amount to Pay</span>
+                <strong>${Number(total || 0).toFixed(2)}</strong>
+              </div>
+            </div>
+
+            <div className="whishNotice">
+              Step 1: Pay using Whish Money. <br />
+              Step 2: Copy the transaction number or take a screenshot. <br />
+              Step 3: Click WhatsApp and send the proof.
+            </div>
+
+            <div className="formGroup whishProofField">
+              <label>Payment Reference / Note optional</label>
+              <input
+                type="text"
+                name="payment_proof"
+                value={customer.payment_proof}
+                onChange={handleCustomerChange}
+                placeholder="Example: Transaction number or write: screenshot sent"
+              />
+            </div>
+
+            <a
+              className="whishPayBtn"
+              href="https://www.whish.money/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Pay with Whish Money
+            </a>
+
+            <a
+              className="whishWhatsappBtn"
+              href={`https://wa.me/96171985165?text=${encodeURIComponent(
+                `Hello CRC Camera Security,
+
+I want to confirm my order payment by Whish Money.
+
+Customer Name: ${customer.customer_name || "Not written yet"}
+Phone: ${customer.customer_phone || "Not written yet"}
+Order Total: $${Number(total || 0).toFixed(2)}
+
+Whish Payment Details:
+Receiver: CRC Camera Security
+Whish Number: +961 71 985 165
+Amount: $${Number(total || 0).toFixed(2)}
+
+Payment Reference / Note:
+${customer.payment_proof || "I will attach the payment screenshot here."}
+
+Please confirm my order.`
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Send Payment Proof on WhatsApp
+            </a>
+          </div>
+        )}
+
+        {customer.payment_method === "cash" && (
+          <div className="cashPaymentCard">
+            <strong>Cash on Delivery / Installation</strong>
+            <p>
+              You can pay when the products are delivered or during the camera
+              installation.
+            </p>
+          </div>
+        )}
+
         <div className="cartBottom cartBottomPro">
           <div>
             <span className="muted small">Cart total</span>
-            <div className="total">Total: ${total.toFixed(2)}</div>
+            <div className="total">Total: ${Number(total || 0).toFixed(2)}</div>
           </div>
 
           <div className="cartButtons">

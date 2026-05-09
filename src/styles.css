@@ -135,7 +135,231 @@
   border: 1px solid #e2ecfb;
   box-shadow: 0 16px 42px rgba(15, 23, 42, 0.06);
 }
+/* ==============================
+   WHISH MONEY PAYMENT CARD
+============================== */
 
+.whishPaymentCard {
+  margin-top: 28px;
+  padding: 28px;
+  border-radius: 26px;
+  background: linear-gradient(135deg, #071b3a 0%, #0b4ea2 100%);
+  color: #ffffff;
+  box-shadow: 0 18px 45px rgba(7, 27, 58, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.whishTop {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.whishLogo {
+  width: 68px;
+  height: 68px;
+  border-radius: 20px;
+  background: #ffffff;
+  color: #0b4ea2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  font-weight: 900;
+  flex-shrink: 0;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+.whishTop h3 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.whishTop p {
+  margin: 7px 0 0;
+  color: #eef6ff;
+  line-height: 1.5;
+  font-size: 15px;
+}
+
+.whishGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.whishBox {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.whishBox span {
+  color: #dbeafe;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.whishBox strong {
+  font-size: 18px;
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.whishNotice {
+  margin-top: 18px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  line-height: 1.7;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.whishProofField {
+  margin-top: 18px;
+  margin-bottom: 0;
+}
+
+.whishProofField label {
+  color: #ffffff;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.whishProofField input {
+  width: 100%;
+  height: 52px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  padding: 0 16px;
+  background: #ffffff;
+  color: #071b3a;
+  font-size: 15px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.whishProofField input::placeholder {
+  color: #6b7280;
+}
+
+.whishPayBtn {
+  margin-top: 18px;
+  width: 100%;
+  min-height: 54px;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #0b4ea2;
+  border: 2px solid #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: 0 12px 24px rgba(255, 255, 255, 0.18);
+  transition: 0.25s ease;
+}
+
+.whishPayBtn:hover {
+  background: #eaf3ff;
+  color: #071b3a;
+  transform: translateY(-2px);
+}
+
+.whishWhatsappBtn {
+  margin-top: 14px;
+  width: 100%;
+  min-height: 54px;
+  border-radius: 16px;
+  background: #25d366;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: 0 12px 24px rgba(37, 211, 102, 0.25);
+  transition: 0.25s ease;
+}
+
+.whishWhatsappBtn:hover {
+  background: #1ebe5d;
+  transform: translateY(-2px);
+}
+
+.cashPaymentCard {
+  margin-top: 28px;
+  padding: 22px;
+  border-radius: 20px;
+  background: #f8fafc;
+  border: 1px solid #dbeafe;
+  color: #071b3a;
+}
+
+.cashPaymentCard strong {
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.cashPaymentCard p {
+  margin: 8px 0 0;
+  color: #5f6b7a;
+  line-height: 1.6;
+}
+
+/* ==============================
+   MOBILE RESPONSIVE
+============================== */
+
+@media (max-width: 768px) {
+  .whishPaymentCard {
+    padding: 22px;
+    border-radius: 22px;
+  }
+
+  .whishTop {
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .whishLogo {
+    width: 58px;
+    height: 58px;
+    font-size: 28px;
+    border-radius: 16px;
+  }
+
+  .whishTop h3 {
+    font-size: 23px;
+  }
+
+  .whishTop p {
+    font-size: 14px;
+  }
+
+  .whishBox {
+    padding: 16px;
+  }
+
+  .whishPayBtn,
+  .whishWhatsappBtn {
+    font-size: 14px;
+    text-align: center;
+    padding: 0 12px;
+  }
+}
 .adminCardTop {
   display: flex;
   justify-content: space-between;
@@ -4144,4 +4368,175 @@ body {
   object-fit: contain !important;
   background: transparent !important;
   filter: drop-shadow(0 24px 26px rgba(15, 23, 42, 0.16)) !important;
+}.whishPaymentCard {
+  margin-top: 28px;
+  padding: 28px;
+  border-radius: 26px;
+  background: linear-gradient(135deg, #071b3a 0%, #0b4ea2 100%);
+  color: #ffffff;
+  box-shadow: 0 18px 45px rgba(7, 27, 58, 0.2);
+}
+
+.whishTop {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.whishLogo {
+  width: 68px;
+  height: 68px;
+  border-radius: 20px;
+  background: #ffffff;
+  color: #0b4ea2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.whishTop h3 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.whishTop p {
+  margin: 7px 0 0;
+  color: #dbeafe;
+  line-height: 1.5;
+}
+
+.whishGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.whishBox {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.whishBox span {
+  color: #dbeafe;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.whishBox strong {
+  font-size: 18px;
+  color: #ffffff;
+}
+
+.whishNotice {
+  margin-top: 18px;
+  padding: 15px 17px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+.whishProofField {
+  margin-top: 18px;
+  margin-bottom: 0;
+}
+
+.whishProofField label {
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.whishProofField input {
+  width: 100%;
+  height: 52px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 0 16px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #071b3a;
+  font-size: 15px;
+  outline: none;
+}
+
+.whishPayBtn {
+  margin-top: 18px;
+  width: 100%;
+  min-height: 54px;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #0b4ea2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: 0 12px 24px rgba(255, 255, 255, 0.18);
+}
+
+.whishPayBtn:hover {
+  background: #eaf3ff;
+}
+
+.whishWhatsappBtn {
+  margin-top: 14px;
+  width: 100%;
+  min-height: 54px;
+  border-radius: 16px;
+  background: #25d366;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: 0 12px 24px rgba(37, 211, 102, 0.25);
+}
+
+.whishWhatsappBtn:hover {
+  background: #1ebe5d;
+}
+
+.cashPaymentCard {
+  margin-top: 28px;
+  padding: 22px;
+  border-radius: 20px;
+  background: #f8fafc;
+  border: 1px solid #dbeafe;
+  color: #071b3a;
+}
+
+.cashPaymentCard strong {
+  font-size: 20px;
+}
+
+.cashPaymentCard p {
+  margin: 8px 0 0;
+  color: #5f6b7a;
+}
+
+@media (max-width: 768px) {
+  .whishTop {
+    align-items: flex-start;
+  }
+
+  .whishTop h3 {
+    font-size: 23px;
+  }
+
+  .whishPaymentCard {
+    padding: 22px;
+  }
 }

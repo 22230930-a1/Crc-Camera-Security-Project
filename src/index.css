@@ -33,3 +33,133 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+.whishPaymentCard {
+  margin-top: 28px;
+  padding: 28px;
+  border-radius: 26px;
+  background: linear-gradient(135deg, #071b3a 0%, #0b4ea2 100%);
+  color: #ffffff;
+  box-shadow: 0 18px 45px rgba(7, 27, 58, 0.2);
+}
+
+.whishTop {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.whishLogo {
+  width: 68px;
+  height: 68px;
+  border-radius: 20px;
+  background: #ffffff;
+  color: #0b4ea2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  font-weight: 900;
+  flex-shrink: 0;
+}
+
+.whishTop h3 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.whishTop p {
+  margin: 7px 0 0;
+  color: #dbeafe;
+  line-height: 1.5;
+}
+
+.whishGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.whishBox {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.whishBox span {
+  color: #dbeafe;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.whishBox strong {
+  font-size: 18px;
+  color: #ffffff;
+}
+
+.whishNotice {
+  margin-top: 18px;
+  padding: 15px 17px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  line-height: 1.6;
+  font-weight: 600;
+}
+
+.whishWhatsappBtn {
+  margin-top: 18px;
+  width: 100%;
+  min-height: 54px;
+  border-radius: 16px;
+  background: #25d366;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: 900;
+  box-shadow: 0 12px 24px rgba(37, 211, 102, 0.25);
+}
+
+.whishWhatsappBtn:hover {
+  background: #1ebe5d;
+}
+
+.cashPaymentCard {
+  margin-top: 28px;
+  padding: 22px;
+  border-radius: 20px;
+  background: #f8fafc;
+  border: 1px solid #dbeafe;
+  color: #071b3a;
+}
+
+.cashPaymentCard strong {
+  font-size: 20px;
+}
+
+.cashPaymentCard p {
+  margin: 8px 0 0;
+  color: #5f6b7a;
+}
+
+@media (max-width: 768px) {
+  .whishTop {
+    align-items: flex-start;
+  }
+
+  .whishTop h3 {
+    font-size: 23px;
+  }
+
+  .whishPaymentCard {
+    padding: 22px;
+  }
+}
