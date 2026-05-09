@@ -19,10 +19,9 @@ const allowedOrigins = [
   "http://localhost:3001",
   "http://localhost:5173",
   "http://localhost:5174",
-
-  // بعد ما تعمل Netlify حط الرابط الحقيقي هون
+  "https://crc-camera-security.netlify.app",
   process.env.CLIENT_URL,
-];
+].filter(Boolean);
 
 app.use(
   cors({
@@ -52,7 +51,7 @@ app.use(express.json());
 ============================== */
 
 app.get("/", (req, res) => {
-  res.send("CRC Camera Security backend is running");
+  res.json({ message: "CRC Camera Security backend is running" });
 });
 
 /* ==============================
