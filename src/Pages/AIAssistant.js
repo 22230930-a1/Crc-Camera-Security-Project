@@ -10,6 +10,25 @@ function AIAssistant() {
   const [recommendation, setRecommendation] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const speakAssistant = () => {
+    if (!window.speechSynthesis) {
+      alert("Voice is not supported in this browser.");
+      return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    const text =
+      "Hello, I am CRC AI Assistant. I can help you choose the best camera setup for your home, shop, office, or warehouse.";
+
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "en-US";
+    speech.rate = 0.95;
+    speech.pitch = 1;
+
+    window.speechSynthesis.speak(speech);
+  };
+
   const handleRecommend = async (e) => {
     e.preventDefault();
 
@@ -31,6 +50,20 @@ function AIAssistant() {
       });
 
       setRecommendation(data.recommendation);
+
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+
+        const speech = new SpeechSynthesisUtterance(
+          "Your CCTV recommendation is ready. Please check the suggested setup below."
+        );
+
+        speech.lang = "en-US";
+        speech.rate = 0.95;
+        speech.pitch = 1;
+
+        window.speechSynthesis.speak(speech);
+      }
     } catch (error) {
       console.error("AI Assistant Error:", error);
       alert(error.message || "Failed to get AI recommendation");
@@ -59,10 +92,14 @@ function AIAssistant() {
             shop, office, or warehouse.
           </div>
 
-          <div style={styles.statusBox}>
+          <button
+            type="button"
+            style={styles.statusBox}
+            onClick={speakAssistant}
+          >
             <span style={styles.statusDot}></span>
-            Online and ready
-          </div>
+            Online and ready - click to hear me
+          </button>
         </div>
 
         {/* RIGHT FORM CARD */}
@@ -162,6 +199,7 @@ function AIAssistant() {
             <div style={styles.resultBox}>
               <div style={styles.resultHeader}>
                 <div style={styles.smallAvatar}>AI</div>
+
                 <div>
                   <h2 style={styles.resultTitle}>CRC AI Recommendation</h2>
                   <p style={styles.resultSub}>Suggested security setup</p>
@@ -227,7 +265,6 @@ const styles = {
     justifyContent: "center",
     alignItems: "center",
     gap: "14px",
-    position: "relative",
   },
 
   eye: {
@@ -262,16 +299,19 @@ const styles = {
   },
 
   statusBox: {
+    width: "100%",
     marginTop: "18px",
     background: "rgba(255,255,255,0.1)",
     border: "1px solid rgba(255,255,255,0.15)",
     padding: "12px 14px",
     borderRadius: "14px",
     fontSize: "14px",
+    color: "#ffffff",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     gap: "8px",
+    cursor: "pointer",
   },
 
   statusDot: {
