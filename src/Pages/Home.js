@@ -71,8 +71,11 @@ export default function Home() {
               help customers protect their places with reliable and clear
               monitoring.
             </p>
+<Link to="/about-more" className="about-crc-btn">
+  Read More
+</Link>
 
-            <button className="about-crc-btn">READ MORE</button>
+   
           </div>
 
           <div className="about-crc-image-box">

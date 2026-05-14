@@ -14,7 +14,7 @@ import Contact from "./Pages/Contact";
 import FAQ from "./Pages/FAQ";
 import QuotePage from "./Pages/QuotePage";
 import AIAssistant from "./Pages/AIAssistant";
-
+import AboutMore from "./Pages/AboutMore";
 export default function App() {
   return (
     <div className="app">
@@ -31,6 +31,7 @@ export default function App() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/quote" element={<QuotePage />} />
           <Route path="/ai" element={<AIAssistant />} />
+          <Route path="/about-more" element={<AboutMore />} />
         </Routes>
       </main>
 

@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { sendAIRecommendation } from "../api/api";
 
 function AIAssistant() {
   const [propertyType, setPropertyType] = useState("");
@@ -10,26 +9,196 @@ function AIAssistant() {
   const [recommendation, setRecommendation] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const speakAssistant = () => {
-    if (!window.speechSynthesis) {
-      alert("Voice is not supported in this browser.");
-      return;
-    }
-
-    window.speechSynthesis.cancel();
-
-    const text =
-      "Hello, I am CRC AI Assistant. I can help you choose the best camera setup for your home, shop, office, or warehouse.";
-
-    const speech = new SpeechSynthesisUtterance(text);
-    speech.lang = "en-US";
-    speech.rate = 0.95;
-    speech.pitch = 1;
-
-    window.speechSynthesis.speak(speech);
+  const getCameraNumber = () => {
+    if (cameraCount === "1-2") return 2;
+    if (cameraCount === "3-4") return 4;
+    if (cameraCount === "5-8") return 8;
+    if (cameraCount === "9+") return 12;
+    return 0;
   };
 
-  const handleRecommend = async (e) => {
+  const getNvrType = (count) => {
+    if (count <= 4) return "4CH PoE NVR";
+    if (count <= 8) return "8CH PoE NVR";
+    if (count <= 16) return "16CH PoE NVR";
+    return "32CH PoE NVR";
+  };
+
+  const getStorage = (count) => {
+    if (count <= 4) {
+      return "1TB HDD minimum. Choose 2TB if you want more recording days.";
+    }
+
+    if (count <= 8) {
+      return "2TB HDD minimum. Choose 4TB for longer recording history.";
+    }
+
+    return "4TB HDD or more, depending on how many days you want to keep recordings.";
+  };
+
+  const getCameraType = () => {
+    if (areaType === "Indoor") {
+      return "Indoor dome cameras, preferably 5MP, because they look clean and cover rooms, shops, and offices nicely.";
+    }
+
+    if (areaType === "Outdoor") {
+      return "Outdoor bullet cameras, preferably 5MP or 8MP, because they are stronger for entrances, parking, gates, and outside areas.";
+    }
+
+    if (areaType === "Indoor and Outdoor") {
+      return "Indoor dome cameras for inside areas and outdoor bullet cameras for outside areas.";
+    }
+
+    return "Dome cameras are recommended for indoor areas, and bullet cameras are recommended for outdoor areas.";
+  };
+
+  const getPlacementAdvice = () => {
+    if (propertyType === "Home" || propertyType === "Apartment") {
+      return `
+Recommended Camera Placement:
+- Main entrance
+- Living room or hallway
+- Parking or gate
+- Balcony, back door, or garden area`;
+    }
+
+    if (propertyType === "Shop") {
+      return `
+Recommended Camera Placement:
+- Cashier area
+- Shop entrance
+- Product shelves
+- Storage room
+- Outdoor front view if needed`;
+    }
+
+    if (propertyType === "Office") {
+      return `
+Recommended Camera Placement:
+- Reception area
+- Office entrance
+- Main hallway
+- Storage/server room
+- Parking or outside entrance`;
+    }
+
+    if (propertyType === "Warehouse") {
+      return `
+Recommended Camera Placement:
+- Main gate
+- Loading/unloading area
+- Storage aisles
+- High indoor corners
+- Back entrance
+- Parking area`;
+    }
+
+    return `
+Recommended Camera Placement:
+- Main entrance
+- Important indoor area
+- Outdoor entrance or parking
+- Storage or back door if available`;
+  };
+
+  const getBudgetAdvice = () => {
+    const value = Number(budget);
+
+    if (!budget) {
+      return "Budget was not entered, so the recommendation is based on a standard professional setup.";
+    }
+
+    if (value < 200) {
+      return "Your budget is low. Choose a basic 2MP or 5MP setup with essential recording.";
+    }
+
+    if (value <= 500) {
+      return "Your budget is medium. I recommend 5MP cameras with good night vision and a reliable PoE NVR.";
+    }
+
+    return "Your budget is strong. I recommend 8MP/4K cameras, PoE connection, Full Color night vision, and a stronger NVR.";
+  };
+
+  const getNotesAnswer = () => {
+    const cleanNotes = notes.trim();
+
+    if (!cleanNotes) return "";
+
+    const lowerNotes = cleanNotes.toLowerCase();
+    let answer = "";
+
+    if (lowerNotes.includes("clear") || lowerNotes.includes("quality")) {
+      answer +=
+        "- You asked for clear quality, so choose at least 5MP cameras. For sharper details, choose 8MP/4K cameras.\n";
+    }
+
+    if (lowerNotes.includes("night") || lowerNotes.includes("dark")) {
+      answer +=
+        "- You mentioned night or dark areas, so Full Color or strong IR night vision cameras are recommended.\n";
+    }
+
+    if (lowerNotes.includes("record") || lowerNotes.includes("recording")) {
+      answer +=
+        "- You mentioned recording, so you need an NVR with HDD storage. Bigger HDD means more recording days.\n";
+    }
+
+    if (lowerNotes.includes("wifi") || lowerNotes.includes("wireless")) {
+      answer +=
+        "- You mentioned Wi-Fi/wireless. Wi-Fi cameras are easier, but wired PoE cameras are more stable for professional security.\n";
+    }
+
+    if (lowerNotes.includes("outside") || lowerNotes.includes("outdoor")) {
+      answer +=
+        "- You mentioned outdoor areas, so use waterproof bullet cameras with strong night vision.\n";
+    }
+
+    if (lowerNotes.includes("inside") || lowerNotes.includes("indoor")) {
+      answer +=
+        "- You mentioned indoor areas, so dome cameras are better because they look clean and cover rooms nicely.\n";
+    }
+
+    if (
+      lowerNotes.includes("price") ||
+      lowerNotes.includes("cost") ||
+      lowerNotes.includes("cheap")
+    ) {
+      answer +=
+        "- You mentioned price/cost. The final price depends on camera quantity, NVR type, HDD size, cable length, and installation place.\n";
+    }
+
+    if (lowerNotes.includes("phone") || lowerNotes.includes("mobile")) {
+      answer +=
+        "- You mentioned phone/mobile view, so the NVR should be configured with mobile app viewing after installation.\n";
+    }
+
+    if (
+      lowerNotes.includes("entrance") ||
+      lowerNotes.includes("door") ||
+      lowerNotes.includes("gate")
+    ) {
+      answer +=
+        "- You mentioned entrance/door/gate, so place one camera facing the entrance clearly to capture faces and movement.\n";
+    }
+
+    if (lowerNotes.includes("parking") || lowerNotes.includes("garage")) {
+      answer +=
+        "- You mentioned parking/garage, so place an outdoor bullet camera covering the full parking view.\n";
+    }
+
+    if (lowerNotes.includes("cashier")) {
+      answer +=
+        "- You mentioned cashier, so place one indoor dome camera directly covering the cashier area.\n";
+    }
+
+    if (answer === "") {
+      answer =
+        "- Based on your notes, the setup should be chosen according to the place, lighting, recording needs, and important camera positions.\n";
+    }
+
+    return `\nBased on Your Notes:\n${answer}`;
+  };
+
+  const handleRecommend = (e) => {
     e.preventDefault();
 
     if (!propertyType || !cameraCount) {
@@ -37,50 +206,89 @@ function AIAssistant() {
       return;
     }
 
-    try {
-      setLoading(true);
-      setRecommendation("");
+    setLoading(true);
+    setRecommendation("");
 
-      const data = await sendAIRecommendation({
-        propertyType,
-        areaType,
-        cameraCount,
-        budget,
-        notes,
-      });
+    setTimeout(() => {
+      const count = getCameraNumber();
+      const nvr = getNvrType(count);
+      const storage = getStorage(count);
+      const cameraType = getCameraType();
+      const placement = getPlacementAdvice();
+      const budgetAdvice = getBudgetAdvice();
+      const notesAnswer = getNotesAnswer();
 
-      setRecommendation(data.recommendation);
+      const finalRecommendation = `
+CRC AI Professional Recommendation
 
-      if (window.speechSynthesis) {
-        window.speechSynthesis.cancel();
+Property Type:
+${propertyType}
 
-        const speech = new SpeechSynthesisUtterance(
-          "Your CCTV recommendation is ready. Please check the suggested setup below."
-        );
+Area Type:
+${areaType || "Not selected"}
 
-        speech.lang = "en-US";
-        speech.rate = 0.95;
-        speech.pitch = 1;
+Camera Count:
+${cameraCount}
 
-        window.speechSynthesis.speak(speech);
-      }
-    } catch (error) {
-      console.error("AI Assistant Error:", error);
-      alert(error.message || "Failed to get AI recommendation");
-    } finally {
+Best Camera Type:
+${cameraType}
+
+Best NVR Type:
+${nvr}
+
+Storage Recommendation:
+${storage}
+${placement}
+
+Budget Advice:
+${budgetAdvice}
+
+Professional Advice:
+For ${propertyType}, this setup is suitable because it gives good coverage, clear recording, mobile viewing support, and future upgrade options.${notesAnswer}
+`;
+
+      setRecommendation(finalRecommendation);
       setLoading(false);
-    }
+    }, 700);
   };
 
   return (
     <div style={styles.page}>
       <div style={styles.container}>
-        {/* LEFT AI PERSON CARD */}
         <div style={styles.aiCard}>
-          <div style={styles.avatarCircle}>
-            <div style={styles.face}>
-              <span style={styles.eye}></span>
-              <span style={styles.eye}></span>
+          <div style={styles.robotWrap}>
+            <div style={styles.robotGlow}></div>
+
+            <div style={styles.robotAntenna}>
+              <span style={styles.antennaDot}></span>
+            </div>
+
+            <div style={styles.robotHead}>
+              <div style={styles.robotFace}>
+                <span style={styles.robotEye}></span>
+                <span style={styles.robotEye}></span>
+              </div>
+            </div>
+
+            <div style={{ ...styles.robotArm, ...styles.leftArm }}>
+              <span style={styles.robotHand}></span>
+            </div>
+
+            <div style={{ ...styles.robotArm, ...styles.rightArm }}>
+              <span style={styles.robotHand}></span>
+            </div>
+
+            <div style={styles.robotBody}>
+              <div style={styles.robotChestLine}></div>
+              <div style={styles.robotButton}></div>
+            </div>
+
+            <div style={{ ...styles.robotLeg, ...styles.leftLeg }}>
+              <span style={styles.robotFoot}></span>
+            </div>
+
+            <div style={{ ...styles.robotLeg, ...styles.rightLeg }}>
+              <span style={styles.robotFoot}></span>
             </div>
           </div>
 
@@ -88,127 +296,129 @@ function AIAssistant() {
           <p style={styles.aiRole}>Smart CCTV Consultant</p>
 
           <div style={styles.chatBubble}>
-            Hi 👋 I can help you choose the best camera setup for your home,
-            shop, office, or warehouse.
+            Hi 👋 I help you choose the right camera type, NVR, storage, and
+            best camera placement.
           </div>
 
-          <button
-            type="button"
-            style={styles.statusBox}
-            onClick={speakAssistant}
-          >
+          <div style={styles.statusBox}>
             <span style={styles.statusDot}></span>
-            Online and ready - click to hear me
-          </button>
+            Online and ready
+          </div>
         </div>
 
-        {/* RIGHT FORM CARD */}
-        <div style={styles.card}>
-          <div style={styles.header}>
-            <p style={styles.label}>Smart CCTV Planning</p>
-            <h1 style={styles.title}>AI Assistant</h1>
-            <p style={styles.subtitle}>
-              Fill the details below and I will recommend the best CCTV setup.
-            </p>
-          </div>
-
-          <form onSubmit={handleRecommend} style={styles.form}>
-            <div style={styles.grid}>
-              <div style={styles.field}>
-                <label style={styles.inputLabel}>Property Type</label>
-                <select
-                  value={propertyType}
-                  onChange={(e) => setPropertyType(e.target.value)}
-                  style={styles.input}
-                >
-                  <option value="">Select property</option>
-                  <option value="Home">Home</option>
-                  <option value="Apartment">Apartment</option>
-                  <option value="Shop">Shop</option>
-                  <option value="Office">Office</option>
-                  <option value="Warehouse">Warehouse</option>
-                </select>
-              </div>
-
-              <div style={styles.field}>
-                <label style={styles.inputLabel}>Area Type</label>
-                <select
-                  value={areaType}
-                  onChange={(e) => setAreaType(e.target.value)}
-                  style={styles.input}
-                >
-                  <option value="">Select area</option>
-                  <option value="Indoor">Indoor</option>
-                  <option value="Outdoor">Outdoor</option>
-                  <option value="Indoor and Outdoor">Indoor and Outdoor</option>
-                </select>
-              </div>
-
-              <div style={styles.field}>
-                <label style={styles.inputLabel}>Camera Count</label>
-                <select
-                  value={cameraCount}
-                  onChange={(e) => setCameraCount(e.target.value)}
-                  style={styles.input}
-                >
-                  <option value="">Select count</option>
-                  <option value="1-2">1-2 cameras</option>
-                  <option value="3-4">3-4 cameras</option>
-                  <option value="5-8">5-8 cameras</option>
-                  <option value="9+">9+ cameras</option>
-                </select>
-              </div>
-
-              <div style={styles.field}>
-                <label style={styles.inputLabel}>Budget</label>
-                <input
-                  type="number"
-                  value={budget}
-                  onChange={(e) => setBudget(e.target.value)}
-                  placeholder="Example: 300"
-                  style={styles.input}
-                />
-              </div>
+        <div style={styles.mainColumn}>
+          <div style={styles.card}>
+            <div style={styles.header}>
+              <p style={styles.label}>Smart CCTV Planning</p>
+              <h1 style={styles.title}>AI Assistant</h1>
+              <p style={styles.subtitle}>
+                Select your project details and get a professional camera setup
+                recommendation.
+              </p>
             </div>
 
-            <div style={styles.field}>
-              <label style={styles.inputLabel}>Extra Notes</label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Example: I need cameras for entrance, parking, and cashier area..."
-                style={styles.textarea}
-              />
-            </div>
+            <form onSubmit={handleRecommend} style={styles.form}>
+              <div style={styles.grid}>
+                <div style={styles.field}>
+                  <label style={styles.inputLabel}>Property Type</label>
+                  <select
+                    value={propertyType}
+                    onChange={(e) => setPropertyType(e.target.value)}
+                    style={styles.input}
+                  >
+                    <option value="">Select property</option>
+                    <option value="Home">Home</option>
+                    <option value="Apartment">Apartment</option>
+                    <option value="Shop">Shop</option>
+                    <option value="Office">Office</option>
+                    <option value="Warehouse">Warehouse</option>
+                  </select>
+                </div>
 
-            <button type="submit" style={styles.button} disabled={loading}>
-              {loading ? "Thinking..." : "Ask CRC AI"}
-            </button>
-          </form>
+                <div style={styles.field}>
+                  <label style={styles.inputLabel}>Area Type</label>
+                  <select
+                    value={areaType}
+                    onChange={(e) => setAreaType(e.target.value)}
+                    style={styles.input}
+                  >
+                    <option value="">Select area</option>
+                    <option value="Indoor">Indoor</option>
+                    <option value="Outdoor">Outdoor</option>
+                    <option value="Indoor and Outdoor">
+                      Indoor and Outdoor
+                    </option>
+                  </select>
+                </div>
 
-          {loading && (
-            <div style={styles.thinkingBox}>
-              <span style={styles.typingDot}></span>
-              <span style={styles.typingDot}></span>
-              <span style={styles.typingDot}></span>
-              CRC AI is preparing your setup...
-            </div>
-          )}
+                <div style={styles.field}>
+                  <label style={styles.inputLabel}>Camera Count</label>
+                  <select
+                    value={cameraCount}
+                    onChange={(e) => setCameraCount(e.target.value)}
+                    style={styles.input}
+                  >
+                    <option value="">Select count</option>
+                    <option value="1-2">1-2 cameras</option>
+                    <option value="3-4">3-4 cameras</option>
+                    <option value="5-8">5-8 cameras</option>
+                    <option value="9+">9+ cameras</option>
+                  </select>
+                </div>
 
-          {recommendation && (
-            <div style={styles.resultBox}>
-              <div style={styles.resultHeader}>
-                <div style={styles.smallAvatar}>AI</div>
-
-                <div>
-                  <h2 style={styles.resultTitle}>CRC AI Recommendation</h2>
-                  <p style={styles.resultSub}>Suggested security setup</p>
+                <div style={styles.field}>
+                  <label style={styles.inputLabel}>Budget</label>
+                  <input
+                    type="number"
+                    value={budget}
+                    onChange={(e) => setBudget(e.target.value)}
+                    placeholder="Example: 300"
+                    style={styles.input}
+                  />
                 </div>
               </div>
 
-              <pre style={styles.resultText}>{recommendation}</pre>
-            </div>
-          )}
+              <div style={styles.field}>
+                <label style={styles.inputLabel}>Extra Notes</label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  placeholder="Example: I need clear cameras for entrance, parking, recording, and night vision..."
+                  style={styles.textarea}
+                />
+              </div>
+
+              <button type="submit" style={styles.button} disabled={loading}>
+                {loading
+                  ? "Preparing Recommendation..."
+                  : "Get Professional Recommendation"}
+              </button>
+            </form>
+
+            {loading && (
+              <div style={styles.thinkingBox}>
+                <span style={styles.typingDot}></span>
+                <span style={styles.typingDot}></span>
+                <span style={styles.typingDot}></span>
+                CRC AI is preparing your CCTV setup...
+              </div>
+            )}
+
+            {recommendation && (
+              <div style={styles.resultBox}>
+                <div style={styles.resultHeader}>
+                  <div style={styles.smallAvatar}>AI</div>
+
+                  <div>
+                    <h2 style={styles.resultTitle}>CRC AI Recommendation</h2>
+                    <p style={styles.resultSub}>Professional suggested setup</p>
+                  </div>
+                </div>
+
+                <pre style={styles.resultText}>{recommendation}</pre>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -227,58 +437,214 @@ const styles = {
     maxWidth: "1200px",
     margin: "0 auto",
     display: "grid",
-    gridTemplateColumns: "330px 1fr",
+    gridTemplateColumns: "390px 1fr",
     gap: "28px",
     alignItems: "start",
   },
 
+  mainColumn: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "28px",
+  },
+
   aiCard: {
-    background: "#071b3a",
+    background:
+      "radial-gradient(circle at top, rgba(77,166,255,0.3), transparent 36%), linear-gradient(180deg, #071b3a 0%, #06172f 100%)",
     color: "#ffffff",
-    borderRadius: "26px",
-    padding: "30px",
+    borderRadius: "32px",
+    padding: "36px 30px",
     textAlign: "center",
-    boxShadow: "0 18px 45px rgba(7, 27, 58, 0.22)",
+    boxShadow: "0 24px 60px rgba(7, 27, 58, 0.28)",
     position: "sticky",
     top: "25px",
+    overflow: "hidden",
   },
 
-  avatarCircle: {
-    width: "130px",
-    height: "130px",
+  robotWrap: {
+    width: "230px",
+    height: "300px",
+    margin: "0 auto 22px",
+    position: "relative",
+  },
+
+  robotGlow: {
+    width: "210px",
+    height: "210px",
+    background: "rgba(72, 175, 255, 0.22)",
     borderRadius: "50%",
-    margin: "0 auto 20px",
-    background:
-      "linear-gradient(135deg, #1d7cff 0%, #77b6ff 45%, #ffffff 100%)",
+    filter: "blur(22px)",
+    position: "absolute",
+    top: "45px",
+    left: "50%",
+    transform: "translateX(-50%)",
+  },
+
+  robotAntenna: {
+    width: "8px",
+    height: "34px",
+    background: "linear-gradient(#8deeff, #2d8cff)",
+    borderRadius: "20px",
+    position: "absolute",
+    top: "4px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    zIndex: 5,
+  },
+
+  antennaDot: {
+    width: "20px",
+    height: "20px",
+    background: "#57e7ff",
+    borderRadius: "50%",
+    position: "absolute",
+    top: "-14px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    boxShadow: "0 0 20px rgba(87,231,255,0.9)",
+  },
+
+  robotHead: {
+    width: "145px",
+    height: "105px",
+    background: "linear-gradient(145deg, #5aaeff, #d9efff)",
+    borderRadius: "42px",
+    position: "absolute",
+    top: "36px",
+    left: "50%",
+    transform: "translateX(-50%)",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    boxShadow: "0 12px 30px rgba(29,124,255,0.35)",
+    boxShadow: "0 18px 38px rgba(72,162,255,0.32)",
+    zIndex: 4,
   },
 
-  face: {
-    width: "82px",
-    height: "60px",
-    borderRadius: "22px",
-    background: "#071b3a",
+  robotFace: {
+    width: "108px",
+    height: "64px",
+    background: "#06172f",
+    borderRadius: "26px",
     display: "flex",
-    justifyContent: "center",
     alignItems: "center",
-    gap: "14px",
+    justifyContent: "center",
+    gap: "20px",
   },
 
-  eye: {
-    width: "12px",
-    height: "12px",
+  robotEye: {
+    width: "16px",
+    height: "16px",
+    borderRadius: "50%",
+    background: "#55eaff",
+    display: "inline-block",
+    boxShadow: "0 0 18px #55eaff",
+  },
+
+  robotBody: {
+    width: "128px",
+    height: "112px",
+    background: "linear-gradient(160deg, #ffffff, #9dccff)",
+    borderRadius: "34px 34px 42px 42px",
+    position: "absolute",
+    top: "138px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    boxShadow: "0 18px 38px rgba(75,165,255,0.22)",
+    zIndex: 3,
+  },
+
+  robotChestLine: {
+    width: "52px",
+    height: "9px",
+    background: "#06172f",
+    borderRadius: "20px",
+    position: "absolute",
+    top: "34px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    opacity: 0.9,
+  },
+
+  robotButton: {
+    width: "22px",
+    height: "22px",
     borderRadius: "50%",
     background: "#4ee7ff",
-    display: "inline-block",
-    boxShadow: "0 0 12px #4ee7ff",
+    position: "absolute",
+    top: "60px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    boxShadow: "0 0 18px rgba(78,231,255,0.95)",
+  },
+
+  robotArm: {
+    width: "26px",
+    height: "92px",
+    background: "linear-gradient(180deg, #91d4ff, #ffffff)",
+    borderRadius: "30px",
+    position: "absolute",
+    top: "142px",
+    zIndex: 2,
+    boxShadow: "0 12px 25px rgba(51,145,255,0.22)",
+  },
+
+  leftArm: {
+    left: "18px",
+    transform: "rotate(22deg)",
+  },
+
+  rightArm: {
+    right: "18px",
+    transform: "rotate(-22deg)",
+  },
+
+  robotHand: {
+    width: "34px",
+    height: "34px",
+    background: "#58e6ff",
+    borderRadius: "50%",
+    position: "absolute",
+    bottom: "-18px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    boxShadow: "0 0 18px rgba(88,230,255,0.8)",
+  },
+
+  robotLeg: {
+    width: "26px",
+    height: "55px",
+    background: "linear-gradient(180deg, #ffffff, #7dbdff)",
+    borderRadius: "20px",
+    position: "absolute",
+    top: "238px",
+    zIndex: 2,
+  },
+
+  leftLeg: {
+    left: "78px",
+  },
+
+  rightLeg: {
+    right: "78px",
+  },
+
+  robotFoot: {
+    width: "46px",
+    height: "18px",
+    background: "#5aaeff",
+    borderRadius: "22px",
+    position: "absolute",
+    bottom: "-9px",
+    left: "50%",
+    transform: "translateX(-50%)",
+    boxShadow: "0 10px 18px rgba(51,145,255,0.25)",
   },
 
   aiName: {
     margin: "10px 0 5px",
-    fontSize: "26px",
+    fontSize: "27px",
+    fontWeight: "900",
+    letterSpacing: "-0.4px",
   },
 
   aiRole: {
@@ -288,14 +654,15 @@ const styles = {
   },
 
   chatBubble: {
-    background: "#ffffff",
+    background: "rgba(255,255,255,0.96)",
     color: "#172033",
-    padding: "18px",
-    borderRadius: "18px",
+    padding: "20px",
+    borderRadius: "22px",
     textAlign: "left",
-    lineHeight: "1.6",
-    fontSize: "15px",
+    lineHeight: "1.65",
+    fontSize: "15.5px",
     marginTop: "18px",
+    boxShadow: "0 16px 35px rgba(0,0,0,0.13)",
   },
 
   statusBox: {
@@ -303,15 +670,15 @@ const styles = {
     marginTop: "18px",
     background: "rgba(255,255,255,0.1)",
     border: "1px solid rgba(255,255,255,0.15)",
-    padding: "12px 14px",
-    borderRadius: "14px",
+    padding: "13px 14px",
+    borderRadius: "16px",
     fontSize: "14px",
+    fontWeight: "700",
     color: "#ffffff",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     gap: "8px",
-    cursor: "pointer",
   },
 
   statusDot: {
@@ -320,6 +687,7 @@ const styles = {
     borderRadius: "50%",
     background: "#30e07a",
     display: "inline-block",
+    boxShadow: "0 0 12px rgba(48,224,122,0.8)",
   },
 
   card: {
@@ -330,7 +698,7 @@ const styles = {
   },
 
   header: {
-    marginBottom: "30px",
+    marginBottom: "25px",
   },
 
   label: {
