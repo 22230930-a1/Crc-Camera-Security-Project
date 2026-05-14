@@ -2,6 +2,7 @@ import React, { useContext, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { CartContext } from "../Context/CartContext";
 import { sendOrderRequest } from "../api/api";
+import whishLogo from "../assets/whish-logo.png";
 
 const WHISH_LINK = "https://www.whish.money/";
 const WHATSAPP_NUMBER = "96171985165";
@@ -272,7 +273,8 @@ Please confirm product availability and payment confirmation.
 
               <div className="crcProductList">
                 {cart.map((item) => {
-                  const lineTotal = Number(item.price || 0) * Number(item.qty || 1);
+                  const lineTotal =
+                    Number(item.price || 0) * Number(item.qty || 1);
 
                   return (
                     <article className="crcProductCard" key={item.id}>
@@ -412,7 +414,10 @@ Please confirm product availability and payment confirmation.
                     setCustomer((prev) => ({ ...prev, payment_method: "whish" }))
                   }
                 >
-                  <span className="crcPayIcon whish">W</span>
+                  <span className="crcPayIcon whish">
+                    <img src={whishLogo} alt="Whish Money" />
+                  </span>
+
                   <div>
                     <strong>Whish Money</strong>
                     <small>Open Whish page, pay, then send proof.</small>
@@ -441,7 +446,10 @@ Please confirm product availability and payment confirmation.
               {customer.payment_method === "whish" && (
                 <div className="crcWhishPreview">
                   <div className="crcWhishHeader">
-                    <div className="crcWhishLogo">W</div>
+                    <div className="crcWhishLogo">
+                      <img src={whishLogo} alt="Whish Money" />
+                    </div>
+
                     <div>
                       <span>Step 3: Whish Money</span>
                       <h3>Continue to Whish payment page</h3>
@@ -575,7 +583,10 @@ Please confirm product availability and payment confirmation.
             </button>
 
             <div className="crcWhishModalHero">
-              <div className="crcWhishModalLogo">W</div>
+              <div className="crcWhishModalLogo">
+                <img src={whishLogo} alt="Whish Money" />
+              </div>
+
               <span>Whish Money Checkout</span>
               <h2>Pay Your Order</h2>
               <p>
