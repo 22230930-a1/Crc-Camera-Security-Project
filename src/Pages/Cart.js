@@ -39,8 +39,29 @@ export default function Cart() {
   const formatMoney = (value) => `$${Number(value || 0).toFixed(2)}`;
 
   const isValidPhone = (phone) => {
-    const cleaned = phone.replace(/\s/g, "");
-    return /^(\+?961|0)?[3-9][0-9]{6,7}$/.test(cleaned);
+    const cleaned = phone.replace(/[\s-]/g, "");
+
+    if (!cleaned) return false;
+
+    // Lebanon:
+    // 71985165, 71 985 165, +96171985165, +961 71 985 165,
+    // 03777777, 03 777 777
+    const lebanonRegex =
+      /^(?:\+?961|0)?(?:3\d{6}|7[01689]\d{6}|8[1789]\d{6}|9\d{6})$/;
+
+    // Syria:
+    // 0991234567, +963991234567, +963 99 123 4567
+    const syriaRegex = /^(?:\+?963|0)?9\d{8}$/;
+
+    // International:
+    // +971501234567, +33123456789, etc.
+    const internationalRegex = /^\+[1-9]\d{7,14}$/;
+
+    return (
+      lebanonRegex.test(cleaned) ||
+      syriaRegex.test(cleaned) ||
+      internationalRegex.test(cleaned)
+    );
   };
 
   const handleCustomerChange = (e) => {
@@ -110,7 +131,9 @@ Please confirm product availability and payment confirmation.
     }
 
     if (!isValidPhone(customer.customer_phone)) {
-      setPhoneError("Please enter a valid Lebanese phone number.");
+      setPhoneError(
+        "Please enter a valid phone number. Example: +961 71 985 165 or +963 99 123 4567."
+      );
       return false;
     }
 
