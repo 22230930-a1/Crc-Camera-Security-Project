@@ -11,8 +11,12 @@ const app = express();
 
 /* ==============================
    CORS
-   Allows local frontend + Netlify frontend
+   Allows local frontend + deployed frontend
 ============================== */
+
+const envOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(",").map((url) => url.trim())
+  : [];
 
 const allowedOrigins = [
   "http://localhost:3000",
@@ -20,13 +24,13 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   "https://crc-camera-security.netlify.app",
-  process.env.CLIENT_URL,
+  ...envOrigins,
 ].filter(Boolean);
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow Postman / direct browser requests
+      // Allow Postman, curl, and direct browser API requests
       if (!origin) return callback(null, true);
 
       if (allowedOrigins.includes(origin)) {
@@ -47,11 +51,18 @@ app.use(
 app.use(express.json());
 
 /* ==============================
-   TEST ROUTE
+   TEST ROUTES
 ============================== */
 
 app.get("/", (req, res) => {
   res.json({ message: "CRC Camera Security backend is running" });
+});
+
+app.get("/api", (req, res) => {
+  res.json({
+    message: "CRC Camera Security API is running",
+    routes: ["/api/products", "/api/quotes", "/api/orders", "/api/ai"],
+  });
 });
 
 /* ==============================
@@ -62,6 +73,14 @@ app.use("/api/products", productsRoutes);
 app.use("/api/quotes", quoteRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/ai", aiRoutes);
+
+/* ==============================
+   404 HANDLER
+============================== */
+
+app.use((req, res) => {
+  res.status(404).json({ message: "Route not found" });
+});
 
 /* ==============================
    START SERVER

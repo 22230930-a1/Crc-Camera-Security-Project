@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-
-const API_URL =
-  process.env.REACT_APP_API_URL || "http://localhost:5000/api";
+import { API_URL } from "../api/api";
 
 export default function Admin() {
   const [quotes, setQuotes] = useState([]);
@@ -15,19 +13,11 @@ export default function Admin() {
       setLoading(true);
       setErrorMessage("");
 
-      console.log("Admin API URL:", API_URL);
-
       const quotesRes = await fetch(`${API_URL}/quotes`);
       const ordersRes = await fetch(`${API_URL}/orders`);
 
-      console.log("Quotes status:", quotesRes.status);
-      console.log("Orders status:", ordersRes.status);
-
       const quotesData = await quotesRes.json();
       const ordersData = await ordersRes.json();
-
-      console.log("Quotes data:", quotesData);
-      console.log("Orders data:", ordersData);
 
       if (!quotesRes.ok) {
         throw new Error(
@@ -92,7 +82,7 @@ export default function Admin() {
           <h3>Admin data failed to load</h3>
           <p>{errorMessage}</p>
           <p>
-            Make sure backend is running on <strong>http://localhost:5000</strong>.
+            Check your backend URL in Netlify: <strong>REACT_APP_API_URL</strong>.
           </p>
           <button className="adminRefresh" onClick={fetchAdminData}>
             Try Again
@@ -112,29 +102,11 @@ export default function Admin() {
                   <span>{quote.status || "new"}</span>
                 </div>
 
-                <p>
-                  <strong>Phone:</strong> {quote.phone || "Not specified"}
-                </p>
-
-                <p>
-                  <strong>Location:</strong>{" "}
-                  {quote.location || "Not specified"}
-                </p>
-
-                <p>
-                  <strong>Property:</strong>{" "}
-                  {quote.property_type || "Not specified"}
-                </p>
-
-                <p>
-                  <strong>Cameras:</strong>{" "}
-                  {quote.camera_count || "Not specified"}
-                </p>
-
-                <p>
-                  <strong>Message:</strong>{" "}
-                  {quote.message || "No message"}
-                </p>
+                <p><strong>Phone:</strong> {quote.phone || "Not specified"}</p>
+                <p><strong>Location:</strong> {quote.location || "Not specified"}</p>
+                <p><strong>Property:</strong> {quote.property_type || "Not specified"}</p>
+                <p><strong>Cameras:</strong> {quote.camera_count || "Not specified"}</p>
+                <p><strong>Message:</strong> {quote.message || "No message"}</p>
 
                 <div className="adminDate">
                   {quote.created_at
@@ -159,25 +131,10 @@ export default function Admin() {
                   <span>{order.payment_status || "pending"}</span>
                 </div>
 
-                <p>
-                  <strong>Phone:</strong>{" "}
-                  {order.customer_phone || "Not specified"}
-                </p>
-
-                <p>
-                  <strong>Email:</strong>{" "}
-                  {order.customer_email || "Not specified"}
-                </p>
-
-                <p>
-                  <strong>Total:</strong> $
-                  {Number(order.total || 0).toFixed(2)}
-                </p>
-
-                <p>
-                  <strong>Payment:</strong>{" "}
-                  {order.payment_method || "whatsapp"}
-                </p>
+                <p><strong>Phone:</strong> {order.customer_phone || "Not specified"}</p>
+                <p><strong>Email:</strong> {order.customer_email || "Not specified"}</p>
+                <p><strong>Total:</strong> ${Number(order.total || 0).toFixed(2)}</p>
+                <p><strong>Payment:</strong> {order.payment_method || "whatsapp"}</p>
 
                 <div className="adminDate">
                   {order.created_at

@@ -6,10 +6,7 @@ const CART_KEY = "crc_cart";
 
 function loadCart() {
   try {
-    // Remove old saved cart from localStorage so old products do not come back
-    localStorage.removeItem(CART_KEY);
-
-    const raw = sessionStorage.getItem(CART_KEY);
+    const raw = localStorage.getItem(CART_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -21,7 +18,7 @@ export function CartProvider({ children }) {
 
   useEffect(() => {
     try {
-      sessionStorage.setItem(CART_KEY, JSON.stringify(cart));
+      localStorage.setItem(CART_KEY, JSON.stringify(cart));
     } catch {}
   }, [cart]);
 
@@ -75,7 +72,6 @@ export function CartProvider({ children }) {
     setCart([]);
 
     try {
-      sessionStorage.removeItem(CART_KEY);
       localStorage.removeItem(CART_KEY);
     } catch {}
   };
