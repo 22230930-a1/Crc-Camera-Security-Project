@@ -106,6 +106,158 @@
 
 .crcWhishModalLogo {
   padding: 10px;
+}.adminHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.adminHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.adminUserBox {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  padding: 10px 14px;
+  border-radius: 14px;
+  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.06);
+}
+
+.adminUserBox span {
+  display: block;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.adminUserBox strong {
+  display: block;
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.adminLogout {
+  border: none;
+  background: #991b1b;
+  color: #ffffff;
+  padding: 12px 18px;
+  border-radius: 999px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.adminLogout:hover {
+  background: #7f1d1d;
+  transform: translateY(-1px);
+}.nav-admin-lock,
+.nav-admin-btn {
+  background: #0f172a;
+  color: #ffffff !important;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-weight: 800;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s ease;
+  font-size: 15px;
+  font-family: inherit;
+}
+
+.nav-admin-lock:hover,
+.nav-admin-btn:hover {
+  background: #1e293b;
+  transform: translateY(-1px);
+}
+
+.admin-unlock-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(5px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.admin-unlock-box {
+  width: 100%;
+  max-width: 390px;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 30px;
+  position: relative;
+  box-shadow: 0 25px 80px rgba(15, 23, 42, 0.25);
+  border: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.admin-unlock-close {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  border: none;
+  background: #f1f5f9;
+  color: #0f172a;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+.admin-unlock-box h3 {
+  margin: 0 0 8px;
+  color: #0f172a;
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.admin-unlock-box p {
+  color: #64748b;
+  margin-bottom: 20px;
+}
+
+.admin-unlock-box form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-unlock-box input {
+  padding: 14px 15px;
+  border-radius: 14px;
+  border: 1px solid #cbd5e1;
+  outline: none;
+  font-size: 15px;
+}
+
+.admin-unlock-box input:focus {
+  border-color: #0f172a;
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+}
+
+.admin-unlock-error {
+  color: #991b1b;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.admin-unlock-box form button {
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: #0f172a;
+  color: #ffffff;
+  font-weight: 900;
+  cursor: pointer;
 }/* ==============================
    ADMIN PAGE
 ============================== */

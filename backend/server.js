@@ -6,6 +6,8 @@ const productsRoutes = require("./routes/productsRoutes");
 const quoteRoutes = require("./routes/quoteRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const aiRoutes = require("./routes/aiRoutes");
+const authRoutes = require("./routes/authRoutes");
+
 
 const app = express();
 
@@ -73,6 +75,7 @@ app.use("/api/products", productsRoutes);
 app.use("/api/quotes", quoteRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api/auth", authRoutes);
 
 /* ==============================
    404 HANDLER
