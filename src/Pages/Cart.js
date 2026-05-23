@@ -30,6 +30,7 @@ export default function Cart() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [phoneError, setPhoneError] = useState("");
+  const [formError, setFormError] = useState("");
   const [showWhishCheckout, setShowWhishCheckout] = useState(false);
 
   const itemsCount = useMemo(() => {
@@ -43,18 +44,11 @@ export default function Cart() {
 
     if (!cleaned) return false;
 
-    // Lebanon:
-    // 71985165, 71 985 165, +96171985165, +961 71 985 165,
-    // 03777777, 03 777 777
     const lebanonRegex =
-      /^(?:\+?961|0)?(?:3\d{6}|7[01689]\d{6}|8[1789]\d{6}|9\d{6})$/;
+      /^(?:03\d{6}|7[01689]\d{6}|81\d{6}|\+9613\d{6}|\+9617[01689]\d{6}|\+96181\d{6})$/;
 
-    // Syria:
-    // 0991234567, +963991234567, +963 99 123 4567
-    const syriaRegex = /^(?:\+?963|0)?9\d{8}$/;
+    const syriaRegex = /^(?:09\d{8}|\+9639\d{8})$/;
 
-    // International:
-    // +971501234567, +33123456789, etc.
     const internationalRegex = /^\+[1-9]\d{7,14}$/;
 
     return (
@@ -72,9 +66,21 @@ export default function Cart() {
       [name]: value,
     }));
 
+    setFormError("");
+    setSuccess("");
+
     if (name === "customer_phone") {
       setPhoneError("");
     }
+  };
+
+  const selectPaymentMethod = (method) => {
+    setCustomer((prev) => ({
+      ...prev,
+      payment_method: method,
+    }));
+
+    setFormError("");
   };
 
   const getPaymentLabel = (method) => {
@@ -84,13 +90,14 @@ export default function Cart() {
   };
 
   const productsText = cart
-    .map(
-      (item, index) =>
-        `${index + 1}. ${item.name}
+    .map((item, index) => {
+      const lineTotal = Number(item.price || 0) * Number(item.qty || 1);
+
+      return `${index + 1}. ${item.name}
 Quantity: ${item.qty}
 Unit Price: ${formatMoney(item.price)}
-Subtotal: ${formatMoney(Number(item.price || 0) * Number(item.qty || 1))}`
-    )
+Subtotal: ${formatMoney(lineTotal)}`;
+    })
     .join("\n\n");
 
   const whatsappMessage = `
@@ -109,6 +116,7 @@ Total: ${formatMoney(total)}
 
 Payment Method: ${getPaymentLabel(customer.payment_method)}
 Payment Status: Pending
+
 Payment Reference / Note:
 ${customer.payment_proof || "Customer will send screenshot manually."}
 
@@ -125,14 +133,17 @@ Please confirm product availability and payment confirmation.
   )}`;
 
   const validateCustomer = () => {
+    setFormError("");
+    setPhoneError("");
+
     if (!customer.customer_name.trim()) {
-      alert("Please enter your full name.");
+      setFormError("Please enter your full name.");
       return false;
     }
 
     if (!isValidPhone(customer.customer_phone)) {
       setPhoneError(
-        "Please enter a valid phone number. Example: +961 71 985 165 or +963 99 123 4567."
+        "Invalid phone number. Use a valid number like +961 71 985 165, 03 123 456, or +963 99 123 4567."
       );
       return false;
     }
@@ -145,17 +156,7 @@ Please confirm product availability and payment confirmation.
     setShowWhishCheckout(true);
   };
 
-  const handleOrderRequest = async (e) => {
-    e.preventDefault();
-    setSuccess("");
-
-    if (!validateCustomer()) return;
-
-    if (customer.payment_method === "whish") {
-      setShowWhishCheckout(true);
-      return;
-    }
-
+  const saveOrder = async (paymentMethod) => {
     setLoading(true);
 
     try {
@@ -163,45 +164,15 @@ Please confirm product availability and payment confirmation.
         ...customer,
         cart,
         total,
-      });
-
-      window.open(whatsappUrl, "_blank");
-
-      setSuccess("Order saved successfully! WhatsApp opened to confirm your order.");
-
-      setCustomer({
-        customer_name: "",
-        customer_phone: "",
-        customer_email: "",
-        payment_method: "whish",
-        payment_proof: "",
-      });
-
-      clearCart();
-    } catch (error) {
-      alert(error.message || "Something went wrong.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const confirmWhishOrder = async () => {
-    if (!validateCustomer()) return;
-
-    setLoading(true);
-
-    try {
-      await sendOrderRequest({
-        ...customer,
-        cart,
-        total,
-        payment_method: "whish",
+        payment_method: paymentMethod,
       });
 
       window.open(whatsappUrl, "_blank");
 
       setSuccess(
-        "Order saved successfully! Please send your Whish payment proof on WhatsApp."
+        paymentMethod === "whish"
+          ? "Order saved successfully. Please send your Whish payment proof on WhatsApp."
+          : "Order saved successfully. WhatsApp opened to confirm your order."
       );
 
       setShowWhishCheckout(false);
@@ -216,10 +187,28 @@ Please confirm product availability and payment confirmation.
 
       clearCart();
     } catch (error) {
-      alert(error.message || "Something went wrong.");
+      setFormError(error.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleOrderRequest = async (e) => {
+    e.preventDefault();
+
+    if (!validateCustomer()) return;
+
+    if (customer.payment_method === "whish") {
+      setShowWhishCheckout(true);
+      return;
+    }
+
+    await saveOrder("cash");
+  };
+
+  const confirmWhishOrder = async () => {
+    if (!validateCustomer()) return;
+    await saveOrder("whish");
   };
 
   if (cart.length === 0) {
@@ -227,10 +216,10 @@ Please confirm product availability and payment confirmation.
       <section className="crcCartEmptyPage">
         <div className="crcEmptyCartCard">
           <div className="crcEmptyCartIcon">🛒</div>
-          <span>Your cart is empty</span>
-          <h1>Shopping Cart</h1>
+          <span>Shopping Cart</span>
+          <h1>Your cart is empty</h1>
           <p>
-            You have not added any cameras, NVR recorders, or accessories yet.
+            Add cameras, NVR recorders, or accessories to continue your order.
           </p>
           <Link to="/products">Explore Products</Link>
         </div>
@@ -240,68 +229,53 @@ Please confirm product availability and payment confirmation.
 
   return (
     <section className="crcCartPage">
-      <div className="crcCartShell">
-        <header className="crcCartHero">
+      <div className="crcCartContainer">
+        <header className="crcCartHeader">
           <div>
             <span className="crcCartBadge">Secure Checkout</span>
-            <h1>Shopping Cart</h1>
+            <h1>Complete Your Order</h1>
             <p>
-              Review your CCTV products, enter your details, choose payment
-              method, and confirm your order through WhatsApp.
+              Review your products, add your details, choose payment method, and
+              confirm through WhatsApp.
             </p>
           </div>
 
-          <div className="crcCartHeroBox">
+          <div className="crcCartHeaderSummary">
             <span>{itemsCount}</span>
-            <strong>Items</strong>
-            <small>{formatMoney(total)}</small>
+            <p>Items</p>
+            <strong>{formatMoney(total)}</strong>
           </div>
         </header>
 
-        {success && <div className="crcCartSuccess">{success}</div>}
+        {success && <div className="crcCartAlert success">{success}</div>}
+        {formError && <div className="crcCartAlert error">{formError}</div>}
 
-        <div className="crcCheckoutSteps">
-          <div className="active">
-            <span>1</span>
-            <p>Products</p>
-          </div>
-          <div className="active">
-            <span>2</span>
-            <p>Details</p>
-          </div>
-          <div className="active">
-            <span>3</span>
-            <p>Payment</p>
-          </div>
-          <div>
-            <span>4</span>
-            <p>Proof</p>
-          </div>
-        </div>
-
-        <div className="crcCartLayout">
-          <main className="crcCartMain">
-            <section className="crcCartPanel">
-              <div className="crcPanelHeader">
+        <div className="crcCartGrid">
+          <main className="crcCartLeft">
+            <section className="crcCartCard">
+              <div className="crcCartSectionTitle">
                 <div>
                   <span>Step 1</span>
-                  <h2>Your Products</h2>
-                  <p>Check quantity, price, and subtotal before checkout.</p>
+                  <h2>Order Products</h2>
                 </div>
 
-                <button type="button" onClick={clearCart} className="crcClearBtn">
+                <button
+                  type="button"
+                  className="crcTextDanger"
+                  onClick={clearCart}
+                >
                   Clear Cart
                 </button>
               </div>
 
-              <div className="crcProductList">
+              <div className="crcCartProducts">
                 {cart.map((item) => {
                   const lineTotal =
                     Number(item.price || 0) * Number(item.qty || 1);
 
                   return (
-                    <article className="crcProductCard" key={item.id}>
-                      <div className="crcProductImage">
+                    <article className="crcCartProduct" key={item.id}>
+                      <div className="crcCartProductImage">
                         {item.image ? (
                           <img src={item.image} alt={item.name} />
                         ) : (
@@ -309,34 +283,33 @@ Please confirm product availability and payment confirmation.
                         )}
                       </div>
 
-                      <div className="crcProductBody">
-                        <div className="crcProductTop">
+                      <div className="crcCartProductInfo">
+                        <div className="crcCartProductTop">
                           <div>
-                            <span className="crcProductTag">Security Product</span>
+                            <span>Security Product</span>
                             <h3>{item.name}</h3>
                           </div>
 
                           <button
                             type="button"
-                            className="crcRemoveBtn"
                             onClick={() => removeFromCart(item.id)}
                           >
                             Remove
                           </button>
                         </div>
 
-                        <div className="crcProductMeta">
+                        <div className="crcCartProductBottom">
                           <div>
-                            <span>Unit Price</span>
+                            <small>Unit Price</small>
                             <strong>{formatMoney(item.price)}</strong>
                           </div>
 
                           <div>
-                            <span>Subtotal</span>
+                            <small>Subtotal</small>
                             <strong>{formatMoney(lineTotal)}</strong>
                           </div>
 
-                          <div className="crcQtyBox">
+                          <div className="crcCartQty">
                             <button
                               type="button"
                               onClick={() => decrementQty(item.id)}
@@ -345,10 +318,7 @@ Please confirm product availability and payment confirmation.
                               −
                             </button>
 
-                            <div>
-                              <span>Qty</span>
-                              <strong>{item.qty}</strong>
-                            </div>
+                            <span>{item.qty}</span>
 
                             <button
                               type="button"
@@ -366,29 +336,28 @@ Please confirm product availability and payment confirmation.
               </div>
             </section>
 
-            <form className="crcCartPanel" onSubmit={handleOrderRequest}>
-              <div className="crcPanelHeader">
+            <form className="crcCartCard" onSubmit={handleOrderRequest}>
+              <div className="crcCartSectionTitle">
                 <div>
                   <span>Step 2</span>
                   <h2>Customer Details</h2>
-                  <p>We use this information to confirm your order.</p>
                 </div>
               </div>
 
-              <div className="crcFormGrid">
-                <div className="crcFormGroup">
+              <div className="crcCheckoutForm">
+                <div className="crcInputGroup">
                   <label>Full Name</label>
                   <input
                     type="text"
                     name="customer_name"
                     value={customer.customer_name}
                     onChange={handleCustomerChange}
-                    placeholder="Enter your name"
+                    placeholder="Enter your full name"
                     required
                   />
                 </div>
 
-                <div className="crcFormGroup">
+                <div className="crcInputGroup">
                   <label>Phone Number</label>
                   <input
                     type="tel"
@@ -398,10 +367,12 @@ Please confirm product availability and payment confirmation.
                     placeholder="+961 71 985 165"
                     required
                   />
-                  {phoneError && <p className="crcFormWarning">{phoneError}</p>}
+                  {phoneError && (
+                    <p className="crcInputWarning">{phoneError}</p>
+                  )}
                 </div>
 
-                <div className="crcFormGroup">
+                <div className="crcInputGroup">
                   <label>Email Optional</label>
                   <input
                     type="email"
@@ -411,39 +382,32 @@ Please confirm product availability and payment confirmation.
                     placeholder="example@email.com"
                   />
                 </div>
+              </div>
 
-                <div className="crcFormGroup">
-                  <label>Payment Method</label>
-                  <select
-                    name="payment_method"
-                    value={customer.payment_method}
-                    onChange={handleCustomerChange}
-                  >
-                    <option value="whish">Whish Money</option>
-                    <option value="cash">Cash on Delivery / Installation</option>
-                  </select>
+              <div className="crcCartSectionTitle payment">
+                <div>
+                  <span>Step 3</span>
+                  <h2>Payment Method</h2>
                 </div>
               </div>
 
-              <div className="crcPaymentChoices">
+              <div className="crcPaymentGrid">
                 <button
                   type="button"
                   className={
                     customer.payment_method === "whish"
-                      ? "crcPaymentCard selected whish"
-                      : "crcPaymentCard"
+                      ? "crcPaymentOption active"
+                      : "crcPaymentOption"
                   }
-                  onClick={() =>
-                    setCustomer((prev) => ({ ...prev, payment_method: "whish" }))
-                  }
+                  onClick={() => selectPaymentMethod("whish")}
                 >
-                  <span className="crcPayIcon whish">
+                  <div className="crcPaymentIcon">
                     <img src={whishLogo} alt="Whish Money" />
-                  </span>
+                  </div>
 
                   <div>
                     <strong>Whish Money</strong>
-                    <small>Open Whish page, pay, then send proof.</small>
+                    <p>Pay using Whish, then send proof on WhatsApp.</p>
                   </div>
                 </button>
 
@@ -451,109 +415,77 @@ Please confirm product availability and payment confirmation.
                   type="button"
                   className={
                     customer.payment_method === "cash"
-                      ? "crcPaymentCard selected cash"
-                      : "crcPaymentCard"
+                      ? "crcPaymentOption active"
+                      : "crcPaymentOption"
                   }
-                  onClick={() =>
-                    setCustomer((prev) => ({ ...prev, payment_method: "cash" }))
-                  }
+                  onClick={() => selectPaymentMethod("cash")}
                 >
-                  <span className="crcPayIcon cash">$</span>
+                  <div className="crcPaymentIcon cash">$</div>
+
                   <div>
-                    <strong>Cash / Installation</strong>
-                    <small>Confirm now and pay on delivery or installation.</small>
+                    <strong>Cash</strong>
+                    <p>Pay on delivery or during installation.</p>
                   </div>
                 </button>
               </div>
 
               {customer.payment_method === "whish" && (
-                <div className="crcWhishPreview">
-                  <div className="crcWhishHeader">
-                    <div className="crcWhishLogo">
-                      <img src={whishLogo} alt="Whish Money" />
-                    </div>
-
-                    <div>
-                      <span>Step 3: Whish Money</span>
-                      <h3>Continue to Whish payment page</h3>
-                      <p>
-                        A payment page will appear with receiver name, Whish
-                        number, total amount, and WhatsApp proof steps.
-                      </p>
-                    </div>
+                <div className="crcWhishBox">
+                  <div>
+                    <img src={whishLogo} alt="Whish Money" />
                   </div>
 
-                  <div className="crcWhishInfo">
-                    <div>
-                      <span>Receiver</span>
-                      <strong>{WHISH_RECEIVER}</strong>
-                    </div>
-                    <div>
-                      <span>Whish Number</span>
-                      <strong>{WHISH_NUMBER}</strong>
-                    </div>
-                    <div>
-                      <span>Total</span>
-                      <strong>{formatMoney(total)}</strong>
-                    </div>
+                  <div>
+                    <span>Whish Money Payment</span>
+                    <h3>{WHISH_RECEIVER}</h3>
+                    <p>
+                      Send <strong>{formatMoney(total)}</strong> to{" "}
+                      <strong>{WHISH_NUMBER}</strong>, then send your proof on
+                      WhatsApp.
+                    </p>
                   </div>
-
-                  <button
-                    type="button"
-                    className="crcOpenWhishBtn"
-                    onClick={openWhishCheckout}
-                  >
-                    Continue to Whish Payment
-                  </button>
                 </div>
               )}
 
               {customer.payment_method === "cash" && (
-                <div className="crcCashBox">
-                  <strong>Cash on Delivery / Installation</strong>
+                <div className="crcCashNotice">
+                  <strong>Cash order selected</strong>
                   <p>
-                    You can pay when the products are delivered or during camera
-                    installation confirmation.
+                    We will confirm your order through WhatsApp before delivery
+                    or installation.
                   </p>
                 </div>
               )}
 
-              <div className="crcCartActionBar">
-                <div>
-                  <span>Cart Total</span>
-                  <strong>{formatMoney(total)}</strong>
-                </div>
+              <div className="crcCartSubmitBar">
+                <Link to="/products">Continue Shopping</Link>
 
-                <div className="crcCartActions">
-                  <Link to="/products">Continue Shopping</Link>
-
-                  <button type="submit" disabled={loading}>
-                    {loading
-                      ? "Sending..."
-                      : customer.payment_method === "whish"
-                      ? "Continue to Payment"
-                      : "Send Order Request"}
-                  </button>
-                </div>
+                <button type="submit" disabled={loading}>
+                  {loading
+                    ? "Processing..."
+                    : customer.payment_method === "whish"
+                    ? "Continue to Whish Payment"
+                    : "Send Cash Order"}
+                </button>
               </div>
             </form>
           </main>
 
-          <aside className="crcCartSidebar">
-            <div className="crcSummaryCard">
+          <aside className="crcCartRight">
+            <div className="crcOrderSummary">
               <h2>Order Summary</h2>
 
-              <div className="crcSummaryLine">
+              <div className="crcSummaryRow">
                 <span>Products</span>
                 <strong>{itemsCount}</strong>
               </div>
 
-              <div className="crcSummaryLine">
+              <div className="crcSummaryRow">
                 <span>Subtotal</span>
                 <strong>{formatMoney(total)}</strong>
               </div>
 
-              <div className="crcSummaryLine">
+              <div className="crcSummaryRow">
                 <span>Installation</span>
                 <strong>Quote</strong>
               </div>
@@ -566,23 +498,30 @@ Please confirm product availability and payment confirmation.
               {customer.payment_method === "whish" ? (
                 <button
                   type="button"
-                  className="crcSummaryWhish"
+                  className="crcSummaryMainBtn"
                   onClick={openWhishCheckout}
+                  disabled={loading}
                 >
                   Continue to Whish
                 </button>
               ) : (
                 <button
                   type="button"
-                  className="crcSummaryDark"
+                  className="crcSummaryMainBtn dark"
                   onClick={handleOrderRequest}
+                  disabled={loading}
                 >
                   Confirm Cash Order
                 </button>
               )}
 
-              <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
-                WhatsApp Proof
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="crcWhatsAppLink"
+              >
+                Open WhatsApp Confirmation
               </a>
 
               <p>
@@ -599,33 +538,30 @@ Please confirm product availability and payment confirmation.
           <div className="crcWhishModal">
             <button
               type="button"
-              className="crcWhishClose"
+              className="crcModalClose"
               onClick={() => setShowWhishCheckout(false)}
             >
               ×
             </button>
 
-            <div className="crcWhishModalHero">
-              <div className="crcWhishModalLogo">
-                <img src={whishLogo} alt="Whish Money" />
-              </div>
-
+            <div className="crcModalHeader">
+              <img src={whishLogo} alt="Whish Money" />
               <span>Whish Money Checkout</span>
-              <h2>Pay Your Order</h2>
+              <h2>Confirm Your Payment</h2>
               <p>
-                Review the details, open Whish Money, pay the amount, then send
-                the proof on WhatsApp.
+                Open Whish Money, transfer the amount, then save your order and
+                send proof through WhatsApp.
               </p>
             </div>
 
-            <div className="crcWhishReceipt">
+            <div className="crcReceiptBox">
               <div>
-                <span>Customer Name</span>
+                <span>Customer</span>
                 <strong>{customer.customer_name || "Customer"}</strong>
               </div>
 
               <div>
-                <span>Customer Phone</span>
+                <span>Phone</span>
                 <strong>{customer.customer_phone || "Not entered"}</strong>
               </div>
 
@@ -639,63 +575,36 @@ Please confirm product availability and payment confirmation.
                 <strong>{WHISH_NUMBER}</strong>
               </div>
 
-              <div className="crcReceiptTotal">
+              <div className="total">
                 <span>Total Amount</span>
                 <strong>{formatMoney(total)}</strong>
               </div>
             </div>
 
-            <div className="crcWhishSteps">
-              <div>
-                <span>1</span>
-                <p>Click “Open Whish Money”.</p>
-              </div>
-
-              <div>
-                <span>2</span>
-                <p>Transfer {formatMoney(total)} to {WHISH_NUMBER}.</p>
-              </div>
-
-              <div>
-                <span>3</span>
-                <p>Take a screenshot or copy the transaction number.</p>
-              </div>
-
-              <div>
-                <span>4</span>
-                <p>Send proof on WhatsApp to confirm your order.</p>
-              </div>
-            </div>
-
-            <div className="crcFormGroup crcModalProof">
-              <label>Payment Reference / Note Optional</label>
+            <div className="crcInputGroup">
+              <label>Payment Reference Optional</label>
               <input
                 type="text"
                 name="payment_proof"
                 value={customer.payment_proof}
                 onChange={handleCustomerChange}
-                placeholder="Example: Transaction number or screenshot sent"
+                placeholder="Transaction number or note"
               />
             </div>
 
-            <div className="crcWhishModalBtns">
+            <div className="crcModalActions">
               <a href={WHISH_LINK} target="_blank" rel="noopener noreferrer">
                 Open Whish Money
               </a>
 
-              <button type="button" onClick={confirmWhishOrder} disabled={loading}>
+              <button
+                type="button"
+                onClick={confirmWhishOrder}
+                disabled={loading}
+              >
                 {loading ? "Saving..." : "Save Order & Open WhatsApp"}
               </button>
             </div>
-
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="crcProofWhatsapp"
-            >
-              Send Payment Proof on WhatsApp
-            </a>
           </div>
         </div>
       )}
