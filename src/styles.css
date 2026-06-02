@@ -474,6 +474,269 @@
   padding: 6px;
   gap: 10px;
 }
+.quotePagePro {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f4f8ff 0%, #ffffff 100%);
+  padding: 70px 20px;
+  color: #0f172a;
+}
+
+.quoteHeroPro {
+  max-width: 900px;
+  margin: 0 auto 35px;
+  text-align: center;
+}
+
+.quoteHeroPro span {
+  display: inline-block;
+  color: #2563eb;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.quoteHeroPro h1 {
+  font-size: clamp(34px, 5vw, 58px);
+  line-height: 1.05;
+  margin: 0 0 16px;
+  font-weight: 900;
+  color: #0b1220;
+}
+
+.quoteHeroPro p {
+  max-width: 720px;
+  margin: 0 auto;
+  color: #64748b;
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+.quoteContainerPro {
+  max-width: 1150px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 28px;
+  align-items: stretch;
+}
+
+.quoteInfoPro,
+.quoteFormPro {
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid #e2e8f0;
+  border-radius: 28px;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.08);
+}
+
+.quoteInfoPro {
+  padding: 36px;
+  background:
+    linear-gradient(135deg, rgba(37, 99, 235, 0.95), rgba(14, 165, 233, 0.92)),
+    #2563eb;
+  color: white;
+  overflow: hidden;
+  position: relative;
+}
+
+.quoteInfoPro::after {
+  content: "";
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  right: -80px;
+  bottom: -70px;
+}
+
+.quoteBadgePro {
+  display: inline-flex;
+  padding: 9px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.quoteInfoPro h2 {
+  font-size: 34px;
+  line-height: 1.15;
+  margin: 24px 0 15px;
+  font-weight: 900;
+}
+
+.quoteInfoPro p {
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.8;
+  font-size: 16px;
+}
+
+.quoteStepsPro {
+  display: grid;
+  gap: 14px;
+  margin-top: 30px;
+  position: relative;
+  z-index: 1;
+}
+
+.quoteStepsPro div {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 15px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(10px);
+}
+
+.quoteStepsPro strong {
+  width: 38px;
+  height: 38px;
+  border-radius: 13px;
+  background: white;
+  color: #2563eb;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+}
+
+.quoteStepsPro span {
+  font-weight: 700;
+}
+
+.quoteFormPro {
+  padding: 34px;
+}
+
+.quoteFormPro h2 {
+  margin: 0 0 22px;
+  font-size: 28px;
+  color: #0f172a;
+  font-weight: 900;
+}
+
+.quoteMessage {
+  padding: 14px 16px;
+  border-radius: 16px;
+  margin-bottom: 18px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.quoteMessage.success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.quoteMessage.error {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.quoteFormGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.formGroupPro {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.formGroupPro.full {
+  grid-column: 1 / -1;
+}
+
+.formGroupPro label {
+  font-size: 14px;
+  font-weight: 800;
+  color: #334155;
+}
+
+.formGroupPro input,
+.formGroupPro select,
+.formGroupPro textarea {
+  width: 100%;
+  border: 1px solid #dbe3ef;
+  background: #f8fafc;
+  border-radius: 16px;
+  padding: 14px 15px;
+  font-size: 15px;
+  color: #0f172a;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.formGroupPro input:focus,
+.formGroupPro select:focus,
+.formGroupPro textarea:focus {
+  border-color: #38bdf8;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.15);
+}
+
+.formGroupPro textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.formWarningPro {
+  margin: 0;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.quoteSubmitPro {
+  width: 100%;
+  margin-top: 22px;
+  border: none;
+  border-radius: 18px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #2563eb, #0ea5e9);
+  color: white;
+  font-size: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 16px 35px rgba(37, 99, 235, 0.28);
+  transition: 0.2s ease;
+}
+
+.quoteSubmitPro:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 45px rgba(37, 99, 235, 0.34);
+}
+
+.quoteSubmitPro:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 900px) {
+  .quotePagePro {
+    padding: 45px 14px;
+  }
+
+  .quoteContainerPro {
+    grid-template-columns: 1fr;
+  }
+
+  .quoteInfoPro,
+  .quoteFormPro {
+    border-radius: 22px;
+    padding: 24px;
+  }
+
+  .quoteFormGrid {
+    grid-template-columns: 1fr;
+  }
+}
 
 .crcCartQty button {
   width: 34px;
