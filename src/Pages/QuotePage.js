@@ -60,7 +60,7 @@ export default function QuotePage() {
     try {
       if (!supabaseUrl || !supabaseAnonKey) {
         throw new Error(
-          "Supabase keys are missing. Check Netlify environment variables."
+          "Supabase keys are missing. Check Vercel/Netlify environment variables."
         );
       }
 
@@ -71,8 +71,8 @@ export default function QuotePage() {
           ? formData.email.trim()
           : null;
 
-      const { error: installationError } = await supabase
-        .from("installations")
+      const { error: quoteError } = await supabase
+        .from("quote_requests")
         .insert([
           {
             full_name: cleanName,
@@ -82,15 +82,11 @@ export default function QuotePage() {
             property_type: formData.property_type || null,
             camera_count: formData.camera_count || null,
             message: formData.message || null,
-            installation_status: "pending",
             status: "pending",
-            technician_name: null,
-            install_date: null,
-            note: formData.message || null,
           },
         ]);
 
-      if (installationError) throw installationError;
+      if (quoteError) throw quoteError;
 
       const whatsappMessage = `
 New Installation Request - CRC Camera Security
@@ -125,8 +121,8 @@ Message: ${formData.message || "No message"}
         message: "",
       });
     } catch (error) {
-      console.log("Installation request error:", error);
-      setErrorMsg(error.message || "Error saving installation request.");
+      console.log("Quote request error:", error);
+      setErrorMsg(error.message || "Error saving quote request.");
     } finally {
       setLoading(false);
     }
