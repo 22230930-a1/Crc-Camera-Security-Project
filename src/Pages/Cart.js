@@ -197,12 +197,22 @@ Please confirm product availability and payment confirmation.
 
       if (customerError) throw customerError;
 
+      // IMPORTANT:
+      // Your customers table uses customer_id, not id
+      const newCustomerId = customerData.customer_id;
+
+      if (!newCustomerId) {
+        throw new Error(
+          "Customer saved, but customer_id was not returned. Check customers table primary key."
+        );
+      }
+
       // 3. Save order in Supabase
       const { data: orderData, error: orderError } = await supabase
         .from("orders")
         .insert([
           {
-            customer_id: customerData.id,
+            customer_id: newCustomerId,
             total_amount: total,
             status: "pending",
           },
@@ -212,10 +222,20 @@ Please confirm product availability and payment confirmation.
 
       if (orderError) throw orderError;
 
+      // IMPORTANT:
+      // Your orders table uses order_id, not id
+      const newOrderId = orderData.order_id;
+
+      if (!newOrderId) {
+        throw new Error(
+          "Order saved, but order_id was not returned. Check orders table primary key."
+        );
+      }
+
       // 4. Save order products in Supabase
       const orderItems = cart.map((item) => ({
-        order_id: orderData.id,
-        product_id: item.id,
+        order_id: newOrderId,
+        product_id: item.product_id || item.id,
         quantity: item.qty,
         price: item.price,
       }));
@@ -229,7 +249,7 @@ Please confirm product availability and payment confirmation.
       // 5. Save payment in Supabase
       const { error: paymentError } = await supabase.from("payments").insert([
         {
-          order_id: orderData.id,
+          order_id: newOrderId,
           method: paymentMethod === "whish" ? "Whish Money" : "Cash",
           amount: total,
           status: "pending",
