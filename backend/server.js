@@ -11,51 +11,23 @@ const authRoutes = require("./routes/authRoutes");
 const app = express();
 
 /* ==============================
-   MIDDLEWARE
-============================== */
-
-app.use(express.json());
-
-/* ==============================
    CORS FIX
 ============================== */
 
-const envOrigins = process.env.CLIENT_URL
-  ? process.env.CLIENT_URL.split(",").map((url) => url.trim())
-  : [];
-
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:3001",
-  "http://localhost:5173",
-  "http://localhost:5174",
-  "https://crc-camera-security-project.vercel.app",
-  "https://crc-camera-security-project-o38zo30ap-crc-camera.vercel.app",
-  ...envOrigins,
-].filter(Boolean);
-
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-
-      if (
-        allowedOrigins.includes(origin) ||
-        origin.endsWith(".vercel.app")
-      ) {
-        return callback(null, true);
-      }
-
-      console.log("Blocked by CORS:", origin);
-      return callback(new Error("Not allowed by CORS"));
-    },
+    origin: true,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-app.options("*", cors());
+/* ==============================
+   MIDDLEWARE
+============================== */
+
+app.use(express.json());
 
 /* ==============================
    TEST ROUTES
