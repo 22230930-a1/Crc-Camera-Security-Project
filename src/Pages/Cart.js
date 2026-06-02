@@ -174,11 +174,21 @@ Please confirm product availability and payment confirmation.
         );
       }
 
-      // Save also in your website/backend DB.
-      // If backend fails, Supabase still saves the order for the demo.
+      const cleanName = customer.customer_name.trim();
+      const cleanPhone = customer.customer_phone.trim();
+      const cleanEmail =
+        customer.customer_email && customer.customer_email.trim() !== ""
+          ? customer.customer_email.trim()
+          : null;
+
+      // Save also in your website/backend database.
+      // If backend fails, Supabase still saves the order.
       try {
         await sendOrderRequest({
           ...customer,
+          customer_name: cleanName,
+          customer_phone: cleanPhone,
+          customer_email: cleanEmail,
           cart,
           total,
           payment_method: paymentMethod,
@@ -192,13 +202,6 @@ Please confirm product availability and payment confirmation.
 
       // 1. Find existing customer by email or phone
       let customerData = null;
-
-      const cleanEmail =
-        customer.customer_email && customer.customer_email.trim() !== ""
-          ? customer.customer_email.trim()
-          : null;
-
-      const cleanPhone = customer.customer_phone.trim();
 
       if (cleanEmail) {
         const { data: existingByEmail, error: emailFindError } = await supabase
@@ -234,7 +237,7 @@ Please confirm product availability and payment confirmation.
           .from("customers")
           .insert([
             {
-              full_name: customer.customer_name.trim(),
+              full_name: cleanName,
               email: cleanEmail,
               phone: cleanPhone,
               address: null,
@@ -262,7 +265,7 @@ Please confirm product availability and payment confirmation.
         .insert([
           {
             customer_id: newCustomerId,
-            customer_name: customer.customer_name.trim(),
+            customer_name: cleanName,
             customer_phone: cleanPhone,
             customer_email: cleanEmail,
             total_amount: Number(total || 0),
@@ -284,9 +287,11 @@ Please confirm product availability and payment confirmation.
         );
       }
 
-      // 4. Save products inside order_items
+      // 4. Save order items WITH customer name
       const orderItems = cart.map((item) => ({
         order_id: newOrderId,
+        customer_name: cleanName,
+        customer_phone: cleanPhone,
         product_id: String(item.product_id || item.id || ""),
         product_name: item.name || "Product",
         quantity: Number(item.qty || 1),
@@ -299,10 +304,13 @@ Please confirm product availability and payment confirmation.
 
       if (orderItemsError) throw orderItemsError;
 
-      // 5. Save payment
+      // 5. Save payment WITH customer name
       const { error: paymentError } = await supabase.from("payments").insert([
         {
           order_id: newOrderId,
+          customer_name: cleanName,
+          customer_phone: cleanPhone,
+          customer_email: cleanEmail,
           method: paymentMethod === "whish" ? "Whish Money" : "Cash",
           amount: Number(total || 0),
           status: "pending",
@@ -317,8 +325,8 @@ Please confirm product availability and payment confirmation.
 
       setSuccess(
         paymentMethod === "whish"
-          ? "Order saved successfully in Supabase. Please send your Whish payment proof on WhatsApp."
-          : "Order saved successfully in Supabase. WhatsApp opened to confirm your order."
+          ? "Order saved successfully. Please send your Whish payment proof on WhatsApp."
+          : "Order saved successfully. WhatsApp opened to confirm your order."
       );
 
       setShowWhishCheckout(false);
