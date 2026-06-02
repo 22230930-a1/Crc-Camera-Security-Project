@@ -1,213 +1,195 @@
 import React, { useState } from "react";
-import { sendQuoteRequest } from "../api/api";
+import { createClient } from "@supabase/supabase-js";
 
-export default function QuotePage() {
-  const [formData, setFormData] = useState({
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+export default function RequestInstallation() {
+  const [form, setForm] = useState({
     full_name: "",
     phone: "",
+    email: "",
     location: "",
-    property_type: "",
     camera_count: "",
     message: "",
   });
 
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
-  const [phoneError, setPhoneError] = useState("");
-
-  const isValidPhone = (phone) => {
-    const cleaned = phone.replace(/\s/g, "");
-
-    /*
-      Valid examples:
-      71985165
-      03985165
-      03 985 165
-      +96171985165
-      96171985165
-    */
-    return /^(\+?961|0)?[3-9][0-9]{6,7}$/.test(cleaned);
-  };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
 
-    if (e.target.name === "phone") {
-      setPhoneError("");
-    }
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setSuccess("");
-
-    if (!isValidPhone(formData.phone)) {
-      setPhoneError("Please enter a valid Lebanese phone number.");
-      setLoading(false);
-      return;
-    }
 
     try {
-      await sendQuoteRequest(formData);
+      if (!supabaseUrl || !supabaseAnonKey) {
+        throw new Error("Supabase keys missing. Check Netlify environment variables.");
+      }
 
-      const whatsappMessage = `
-New Installation Request - CRC Camera Security
+      if (!form.full_name.trim()) {
+        throw new Error("Please enter your full name.");
+      }
 
-Name: ${formData.full_name}
-Phone: ${formData.phone}
-Location: ${formData.location || "Not specified"}
-Property Type: ${formData.property_type || "Not specified"}
-Camera Count: ${formData.camera_count || "Not specified"}
-Message: ${formData.message || "No message"}
-`;
+      if (!form.phone.trim()) {
+        throw new Error("Please enter your phone number.");
+      }
 
-      const phoneNumber = "96171985165";
-      const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
-        whatsappMessage
-      )}`;
+      if (!form.location.trim()) {
+        throw new Error("Please enter your location.");
+      }
 
-      window.open(whatsappUrl, "_blank");
+      // 1. Save customer request in quote_requests
+      const { data: requestData, error: requestError } = await supabase
+        .from("quote_requests")
+        .insert([
+          {
+            full_name: form.full_name.trim(),
+            phone: form.phone.trim(),
+            email: form.email.trim() || null,
+            location: form.location.trim(),
+            service_type: "Installation",
+            camera_count: form.camera_count || null,
+            message: form.message.trim() || null,
+            status: "pending",
+          },
+        ])
+        .select()
+        .single();
 
-      setSuccess(
-        "Request saved successfully! WhatsApp opened with your request message."
-      );
+      if (requestError) throw requestError;
 
-      setFormData({
+      // 2. Also save in installations table for admin follow-up
+      const { error: installationError } = await supabase
+        .from("installations")
+        .insert([
+          {
+            request_id: requestData.request_id,
+            customer_id: null,
+            install_date: null,
+            technician_name: null,
+            installation_status: "pending",
+            note: form.message.trim() || null,
+          },
+        ]);
+
+      if (installationError) throw installationError;
+
+      alert("Installation request saved successfully!");
+
+      setForm({
         full_name: "",
         phone: "",
+        email: "",
         location: "",
-        property_type: "",
         camera_count: "",
         message: "",
       });
     } catch (error) {
-      alert(error.message || "Something went wrong. Please try again.");
+      console.log("Installation request error:", error);
+      alert(error.message || "Error saving quote request");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <section className="quotePage">
-      <div className="quoteContainer">
-        <div className="quoteInfo">
-          <span className="quoteBadge">Installation Request</span>
-
-          <h1>Request a Camera Installation Quote</h1>
-
+    <section className="request-installation-page">
+      <div className="request-installation-container">
+        <div className="request-installation-left">
+          <span>CRC Camera Security</span>
+          <h1>Request Installation</h1>
           <p>
-            Send your details and CRC Camera Security will contact you with the
-            best CCTV installation solution for your home, shop, office, or
-            business.
+            Fill this form and CRC Camera Security will contact you with the best
+            solution for your place.
           </p>
-
-          <div className="quoteHighlights">
-            <div>
-              <strong>1</strong>
-              <span>Tell us your location and property type</span>
-            </div>
-
-            <div>
-              <strong>2</strong>
-              <span>Choose how many cameras you need</span>
-            </div>
-
-            <div>
-              <strong>3</strong>
-              <span>We contact you with the best solution</span>
-            </div>
-          </div>
         </div>
 
-        <form className="quoteForm" onSubmit={handleSubmit}>
-          <h2>Send Request</h2>
-
-          {success && <div className="quoteSuccessMessage">{success}</div>}
-
-          <div className="formGroup">
+        <form className="request-installation-form" onSubmit={handleSubmit}>
+          <div className="form-group">
             <label>Full Name</label>
             <input
               type="text"
               name="full_name"
-              value={formData.full_name}
+              value={form.full_name}
               onChange={handleChange}
-              placeholder="Enter your name"
+              placeholder="Enter your full name"
               required
             />
           </div>
 
-          <div className="formGroup">
+          <div className="form-group">
             <label>Phone Number</label>
             <input
               type="tel"
               name="phone"
-              value={formData.phone}
+              value={form.phone}
               onChange={handleChange}
               placeholder="+961 71 985 165"
               required
             />
-            {phoneError && <p className="formWarning">{phoneError}</p>}
           </div>
 
-          <div className="formGroup">
+          <div className="form-group">
+            <label>Email Optional</label>
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="example@email.com"
+            />
+          </div>
+
+          <div className="form-group">
             <label>Location</label>
             <input
               type="text"
               name="location"
-              value={formData.location}
+              value={form.location}
               onChange={handleChange}
-              placeholder="Mansourah, Bekaa..."
+              placeholder="Mansourah, West Bekaa..."
+              required
             />
           </div>
 
-          <div className="formGroup">
-            <label>Property Type</label>
-            <select
-              name="property_type"
-              value={formData.property_type}
-              onChange={handleChange}
-            >
-              <option value="">Select type</option>
-              <option value="Home">Home</option>
-              <option value="Shop">Shop</option>
-              <option value="Office">Office</option>
-              <option value="Warehouse">Warehouse</option>
-              <option value="Business">Business</option>
-              <option value="Other">Other</option>
-            </select>
-          </div>
-
-          <div className="formGroup">
+          <div className="form-group">
             <label>Camera Count</label>
             <select
               name="camera_count"
-              value={formData.camera_count}
+              value={form.camera_count}
               onChange={handleChange}
             >
               <option value="">Select cameras</option>
-              <option value="1-2">1-2 Cameras</option>
-              <option value="3-4">3-4 Cameras</option>
-              <option value="5-8">5-8 Cameras</option>
-              <option value="9+">9+ Cameras</option>
+              <option value="1-2 cameras">1 - 2 cameras</option>
+              <option value="3-4 cameras">3 - 4 cameras</option>
+              <option value="5-8 cameras">5 - 8 cameras</option>
+              <option value="More than 8 cameras">More than 8 cameras</option>
             </select>
           </div>
 
-          <div className="formGroup full">
+          <div className="form-group">
             <label>Message</label>
             <textarea
               name="message"
-              value={formData.message}
+              value={form.message}
               onChange={handleChange}
-              placeholder="Tell us what you need..."
+              placeholder="Tell us where you want cameras, indoor/outdoor, cable distance..."
+              rows="4"
             />
           </div>
 
-          <button type="submit" className="quoteSubmit" disabled={loading}>
-            {loading ? "Sending..." : "Send Installation Request"}
+          <button type="submit" disabled={loading}>
+            {loading ? "Saving..." : "Send Installation Request"}
           </button>
         </form>
       </div>
