@@ -25,7 +25,7 @@ const allowedOrigins = [
   "http://localhost:3001",
   "http://localhost:5173",
   "http://localhost:5174",
-  "https://crc-camera-security.netlify.app",
+  "https://crc-camera-security-project.vercel.app",
   ...envOrigins,
 ].filter(Boolean);
 

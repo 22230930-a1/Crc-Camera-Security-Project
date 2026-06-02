@@ -75,10 +75,10 @@ export default function ProductDetails() {
             <Link to="/quote" className="detailBtn detailBtnBlue">
               Request Installation
             </Link>
-
-            <Link to="/products" className="detailBtn detailBtnLight">
+<Link to="/products" className="detailBtn detailBtnLight">
               Back
             </Link>
+            
           </div>
         </div>
       </div>
