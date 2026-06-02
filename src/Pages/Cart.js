@@ -182,32 +182,68 @@ Please confirm product availability and payment confirmation.
         payment_method: paymentMethod,
       });
 
-      // 2. Save customer in Supabase
-      const { data: customerData, error: customerError } = await supabase
-        .from("customers")
-        .insert([
-          {
-            full_name: customer.customer_name,
-            email: customer.customer_email || null,
-            phone: customer.customer_phone,
-          },
-        ])
-        .select()
-        .single();
+      // 2. Find existing customer by email or phone
+      let customerData = null;
 
-      if (customerError) throw customerError;
+      if (customer.customer_email && customer.customer_email.trim() !== "") {
+        const { data: existingByEmail, error: emailFindError } = await supabase
+          .from("customers")
+          .select("*")
+          .eq("email", customer.customer_email.trim())
+          .maybeSingle();
 
-      // IMPORTANT:
-      // Your customers table uses customer_id, not id
+        if (emailFindError) throw emailFindError;
+
+        if (existingByEmail) {
+          customerData = existingByEmail;
+        }
+      }
+
+      if (!customerData && customer.customer_phone) {
+        const { data: existingByPhone, error: phoneFindError } = await supabase
+          .from("customers")
+          .select("*")
+          .eq("phone", customer.customer_phone)
+          .maybeSingle();
+
+        if (phoneFindError) throw phoneFindError;
+
+        if (existingByPhone) {
+          customerData = existingByPhone;
+        }
+      }
+
+      // 3. If customer does not exist, create new customer
+      if (!customerData) {
+        const { data: newCustomer, error: customerError } = await supabase
+          .from("customers")
+          .insert([
+            {
+              full_name: customer.customer_name,
+              email:
+                customer.customer_email && customer.customer_email.trim() !== ""
+                  ? customer.customer_email.trim()
+                  : null,
+              phone: customer.customer_phone,
+            },
+          ])
+          .select()
+          .single();
+
+        if (customerError) throw customerError;
+
+        customerData = newCustomer;
+      }
+
       const newCustomerId = customerData.customer_id;
 
       if (!newCustomerId) {
         throw new Error(
-          "Customer saved, but customer_id was not returned. Check customers table primary key."
+          "Customer found/saved, but customer_id was not returned. Check customers table."
         );
       }
 
-      // 3. Save order in Supabase
+      // 4. Save order in Supabase
       const { data: orderData, error: orderError } = await supabase
         .from("orders")
         .insert([
@@ -222,17 +258,15 @@ Please confirm product availability and payment confirmation.
 
       if (orderError) throw orderError;
 
-      // IMPORTANT:
-      // Your orders table uses order_id, not id
       const newOrderId = orderData.order_id;
 
       if (!newOrderId) {
         throw new Error(
-          "Order saved, but order_id was not returned. Check orders table primary key."
+          "Order saved, but order_id was not returned. Check orders table."
         );
       }
 
-      // 4. Save order products in Supabase
+      // 5. Save order items in Supabase
       const orderItems = cart.map((item) => ({
         order_id: newOrderId,
         product_id: item.product_id || item.id,
@@ -246,7 +280,7 @@ Please confirm product availability and payment confirmation.
 
       if (orderItemsError) throw orderItemsError;
 
-      // 5. Save payment in Supabase
+      // 6. Save payment in Supabase
       const { error: paymentError } = await supabase.from("payments").insert([
         {
           order_id: newOrderId,
@@ -258,7 +292,7 @@ Please confirm product availability and payment confirmation.
 
       if (paymentError) throw paymentError;
 
-      // 6. Open WhatsApp confirmation
+      // 7. Open WhatsApp confirmation
       window.open(whatsappUrl, "_blank");
 
       setSuccess(
