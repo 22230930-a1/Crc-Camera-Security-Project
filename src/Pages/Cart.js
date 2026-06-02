@@ -249,6 +249,7 @@ Please confirm product availability and payment confirmation.
         .insert([
           {
             customer_id: newCustomerId,
+            customer_name: customer.customer_name,
             total_amount: total,
             status: "pending",
           },
