@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { sendQuoteRequest } from "../api/api";
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
@@ -44,9 +43,14 @@ export default function QuotePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Prevent double click duplicate save
+    if (loading) return;
+
     setLoading(true);
     setSuccess("");
     setErrorMsg("");
+    setPhoneError("");
 
     if (!isValidPhone(formData.phone)) {
       setPhoneError("Please enter a valid Lebanese phone number.");
@@ -68,57 +72,24 @@ export default function QuotePage() {
           ? formData.email.trim()
           : null;
 
-      // Save in your backend too. If backend fails, Supabase continues.
-      try {
-        await sendQuoteRequest(formData);
-      } catch (backendError) {
-        console.log(
-          "Backend quote save failed, but Supabase will continue:",
-          backendError
-        );
-      }
-
-      // 1. Save request in quote_requests
-      const { data: requestData, error: quoteError } = await supabase
-        .from("quote_requests")
-        .insert([
-          {
-            full_name: cleanName,
-            phone: cleanPhone,
-            email: cleanEmail,
-            location: formData.location || null,
-            service_type: "Installation",
-            property_type: formData.property_type || null,
-            camera_count: formData.camera_count || null,
-            message: formData.message || null,
-            status: "pending",
-          },
-        ])
-        .select()
-        .single();
+      // ONE SAVE ONLY: save request in Supabase quote_requests
+      const { error: quoteError } = await supabase.from("quote_requests").insert([
+        {
+          full_name: cleanName,
+          phone: cleanPhone,
+          email: cleanEmail,
+          location: formData.location || null,
+          service_type: "Installation",
+          property_type: formData.property_type || null,
+          camera_count: formData.camera_count || null,
+          message: formData.message || null,
+          status: "pending",
+        },
+      ]);
 
       if (quoteError) throw quoteError;
 
-      // 2. Save also in installations for admin follow-up
-      const { error: installationError } = await supabase
-        .from("installations")
-        .insert([
-          {
-            request_id: requestData.request_id,
-            customer_id: null,
-            install_date: null,
-            technician_name: null,
-            installation_status: "pending",
-            note: `Property: ${
-              formData.property_type || "Not specified"
-            } | Cameras: ${formData.camera_count || "Not specified"} | ${
-              formData.message || "No message"
-            }`,
-          },
-        ]);
-
-      if (installationError) throw installationError;
-
+      // WhatsApp message after successful save
       const whatsappMessage = `
 New Installation Request - CRC Camera Security
 
