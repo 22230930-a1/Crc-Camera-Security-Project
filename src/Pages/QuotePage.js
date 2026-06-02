@@ -72,7 +72,7 @@ export default function QuotePage() {
           : null;
 
       const { error: installationError } = await supabase
-        .from("quote_requests")
+        .from("installations")
         .insert([
           {
             full_name: cleanName,
