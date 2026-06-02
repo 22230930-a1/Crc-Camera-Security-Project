@@ -44,7 +44,6 @@ export default function QuotePage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Prevent double click duplicate save
     if (loading) return;
 
     setLoading(true);
@@ -72,24 +71,27 @@ export default function QuotePage() {
           ? formData.email.trim()
           : null;
 
-      // ONE SAVE ONLY: save request in Supabase quote_requests
-      const { error: quoteError } = await supabase.from("quote_requests").insert([
-        {
-          full_name: cleanName,
-          phone: cleanPhone,
-          email: cleanEmail,
-          location: formData.location || null,
-          service_type: "Installation",
-          property_type: formData.property_type || null,
-          camera_count: formData.camera_count || null,
-          message: formData.message || null,
-          status: "pending",
-        },
-      ]);
+      const { error: installationError } = await supabase
+        .from("installations")
+        .insert([
+          {
+            full_name: cleanName,
+            phone: cleanPhone,
+            email: cleanEmail,
+            location: formData.location || null,
+            property_type: formData.property_type || null,
+            camera_count: formData.camera_count || null,
+            message: formData.message || null,
+            installation_status: "pending",
+            status: "pending",
+            technician_name: null,
+            install_date: null,
+            note: formData.message || null,
+          },
+        ]);
 
-      if (quoteError) throw quoteError;
+      if (installationError) throw installationError;
 
-      // WhatsApp message after successful save
       const whatsappMessage = `
 New Installation Request - CRC Camera Security
 
@@ -123,8 +125,8 @@ Message: ${formData.message || "No message"}
         message: "",
       });
     } catch (error) {
-      console.log("Quote request error:", error);
-      setErrorMsg(error.message || "Error saving quote request.");
+      console.log("Installation request error:", error);
+      setErrorMsg(error.message || "Error saving installation request.");
     } finally {
       setLoading(false);
     }
