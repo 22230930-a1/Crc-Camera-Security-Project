@@ -3,6 +3,12 @@ import { Link } from "react-router-dom";
 import { CartContext } from "../Context/CartContext";
 import { sendOrderRequest } from "../api/api";
 import whishLogo from "../assets/whish-logo.png";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY;
+
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const WHISH_LINK = "https://www.whish.money/";
 const WHATSAPP_NUMBER = "96171985165";
@@ -158,8 +164,17 @@ Please confirm product availability and payment confirmation.
 
   const saveOrder = async (paymentMethod) => {
     setLoading(true);
+    setFormError("");
+    setSuccess("");
 
     try {
+      if (!supabaseUrl || !supabaseAnonKey) {
+        throw new Error(
+          "Supabase keys are missing. Check Netlify environment variables."
+        );
+      }
+
+      // 1. Save in your website/backend database
       await sendOrderRequest({
         ...customer,
         cart,
@@ -167,12 +182,69 @@ Please confirm product availability and payment confirmation.
         payment_method: paymentMethod,
       });
 
+      // 2. Save customer in Supabase
+      const { data: customerData, error: customerError } = await supabase
+        .from("customers")
+        .insert([
+          {
+            full_name: customer.customer_name,
+            email: customer.customer_email || null,
+            phone: customer.customer_phone,
+          },
+        ])
+        .select()
+        .single();
+
+      if (customerError) throw customerError;
+
+      // 3. Save order in Supabase
+      const { data: orderData, error: orderError } = await supabase
+        .from("orders")
+        .insert([
+          {
+            customer_id: customerData.id,
+            total_amount: total,
+            status: "pending",
+          },
+        ])
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // 4. Save order products in Supabase
+      const orderItems = cart.map((item) => ({
+        order_id: orderData.id,
+        product_id: item.id,
+        quantity: item.qty,
+        price: item.price,
+      }));
+
+      const { error: orderItemsError } = await supabase
+        .from("order_items")
+        .insert(orderItems);
+
+      if (orderItemsError) throw orderItemsError;
+
+      // 5. Save payment in Supabase
+      const { error: paymentError } = await supabase.from("payments").insert([
+        {
+          order_id: orderData.id,
+          method: paymentMethod === "whish" ? "Whish Money" : "Cash",
+          amount: total,
+          status: "pending",
+        },
+      ]);
+
+      if (paymentError) throw paymentError;
+
+      // 6. Open WhatsApp confirmation
       window.open(whatsappUrl, "_blank");
 
       setSuccess(
         paymentMethod === "whish"
-          ? "Order saved successfully. Please send your Whish payment proof on WhatsApp."
-          : "Order saved successfully. WhatsApp opened to confirm your order."
+          ? "Order saved in website database and Supabase. Please send your Whish payment proof on WhatsApp."
+          : "Order saved in website database and Supabase. WhatsApp opened to confirm your order."
       );
 
       setShowWhishCheckout(false);
@@ -187,6 +259,7 @@ Please confirm product availability and payment confirmation.
 
       clearCart();
     } catch (error) {
+      console.log("Checkout error:", error);
       setFormError(error.message || "Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -194,7 +267,9 @@ Please confirm product availability and payment confirmation.
   };
 
   const handleOrderRequest = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) {
+      e.preventDefault();
+    }
 
     if (!validateCustomer()) return;
 
