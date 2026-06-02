@@ -10,10 +10,6 @@ const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
-/* ==============================
-   CORS FIX
-============================== */
-
 app.use(
   cors({
     origin: true,
@@ -23,15 +19,7 @@ app.use(
   })
 );
 
-/* ==============================
-   MIDDLEWARE
-============================== */
-
 app.use(express.json());
-
-/* ==============================
-   TEST ROUTES
-============================== */
 
 app.get("/", (req, res) => {
   res.json({ message: "CRC Camera Security backend is running" });
@@ -40,31 +28,26 @@ app.get("/", (req, res) => {
 app.get("/api", (req, res) => {
   res.json({
     message: "CRC Camera Security API is running",
-    routes: ["/api/products", "/api/quotes", "/api/orders", "/api/ai", "/api/auth"],
   });
 });
 
-/* ==============================
-   API ROUTES
-============================== */
-
+/* NEW API ROUTES */
 app.use("/api/products", productsRoutes);
 app.use("/api/quotes", quoteRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/auth", authRoutes);
 
-/* ==============================
-   404 HANDLER
-============================== */
+/* OLD ROUTES FOR ADMIN.JS */
+app.use("/products", productsRoutes);
+app.use("/quotes", quoteRoutes);
+app.use("/orders", orderRoutes);
+app.use("/ai", aiRoutes);
+app.use("/auth", authRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
-
-/* ==============================
-   START SERVER
-============================== */
 
 const PORT = process.env.PORT || 5000;
 
