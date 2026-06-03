@@ -237,7 +237,7 @@ export default function Admin() {
 
                 <p>
                   <strong>Total:</strong> $
-                  {Number(order.total || order.total_price || 0).toFixed(2)}
+                {Number(order.total_amount || order.total || order.total_price || order.amount || 0).toFixed(2)}
                 </p>
 
                 <p>

@@ -9,7 +9,6 @@ export default function Products() {
   const { addToCart } = useContext(CartContext);
   const [searchParams, setSearchParams] = useSearchParams();
   const [message, setMessage] = useState("");
-
   const selectedCategory = searchParams.get("category") || "All";
 
   const filteredProducts =
